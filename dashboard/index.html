@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blockchain-FL Medical Record Sharing — Live Dashboard</title>
+  <meta name="description" content="Real-time dashboard for the Blockchain + Federated Learning medical record sharing prototype. Visualizes FL training rounds, hospital node metrics, and blockchain audit trail." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <header id="main-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Blockchain-FL Medical Record Sharing</h1>
+          <p class="header-sub">Privacy-Preserving Federated Learning · Permissioned Blockchain Audit Trail</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-pill" id="sim-status-pill">
+          <span class="pulse-dot"></span>
+          <span id="sim-status-text">Connecting...</span>
+        </div>
+        <div class="chain-badge" id="chain-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          <span id="chain-validity">Chain: —</span>
+          <span id="chain-blocks">0 blocks</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ── Progress bar ───────────────────────────────────────── -->
+    <section class="progress-section" id="progress-section">
+      <div class="progress-header">
+        <span class="section-label">FL Training Progress</span>
+        <span id="round-label" class="round-label">Round — / —</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-metrics">
+        <div class="metric-chip">
+          <span class="chip-label">Global Accuracy</span>
+          <span class="chip-value accent" id="global-accuracy">—</span>
+        </div>
+        <div class="metric-chip">
+          <span class="chip-label">Avg Loss</span>
+          <span class="chip-value" id="global-loss">—</span>
+        </div>
+        <div class="metric-chip">
+          <span class="chip-label">Hospitals</span>
+          <span class="chip-value">3</span>
+        </div>
+        <div class="metric-chip">
+          <span class="chip-label">Dataset</span>
+          <span class="chip-value">PIMA Diabetes</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Hospital cards ─────────────────────────────────────── -->
+    <section class="cards-grid" id="hospitals-section" aria-label="Hospital nodes">
+      <div class="hospital-card glass" id="card-hospital-1">
+        <div class="card-header">
+          <div class="hospital-icon">🏥</div>
+          <div>
+            <div class="card-title" id="h1-name">Hospital A</div>
+            <div class="card-sub" id="h1-records">— records</div>
+          </div>
+          <div class="reg-badge" id="h1-reg">Pending</div>
+        </div>
+        <div class="card-stat-row">
+          <div class="stat"><span class="stat-label">Local Loss</span><span class="stat-val" id="h1-loss">—</span></div>
+          <div class="stat"><span class="stat-label">Block #</span><span class="stat-val" id="h1-block">—</span></div>
+        </div>
+        <div class="mini-chart-wrap">
+          <canvas class="mini-chart" id="chart-h1" width="240" height="60"></canvas>
+        </div>
+      </div>
+
+      <div class="hospital-card glass" id="card-hospital-2">
+        <div class="card-header">
+          <div class="hospital-icon">🏥</div>
+          <div>
+            <div class="card-title" id="h2-name">Hospital B</div>
+            <div class="card-sub" id="h2-records">— records</div>
+          </div>
+          <div class="reg-badge" id="h2-reg">Pending</div>
+        </div>
+        <div class="card-stat-row">
+          <div class="stat"><span class="stat-label">Local Loss</span><span class="stat-val" id="h2-loss">—</span></div>
+          <div class="stat"><span class="stat-label">Block #</span><span class="stat-val" id="h2-block">—</span></div>
+        </div>
+        <div class="mini-chart-wrap">
+          <canvas class="mini-chart" id="chart-h2" width="240" height="60"></canvas>
+        </div>
+      </div>
+
+      <div class="hospital-card glass" id="card-hospital-3">
+        <div class="card-header">
+          <div class="hospital-icon">🏥</div>
+          <div>
+            <div class="card-title" id="h3-name">Hospital C</div>
+            <div class="card-sub" id="h3-records">— records</div>
+          </div>
+          <div class="reg-badge" id="h3-reg">Pending</div>
+        </div>
+        <div class="card-stat-row">
+          <div class="stat"><span class="stat-label">Local Loss</span><span class="stat-val" id="h3-loss">—</span></div>
+          <div class="stat"><span class="stat-label">Block #</span><span class="stat-val" id="h3-block">—</span></div>
+        </div>
+        <div class="mini-chart-wrap">
+          <canvas class="mini-chart" id="chart-h3" width="240" height="60"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Main chart + blockchain log ───────────────────────── -->
+    <section class="bottom-grid">
+
+      <!-- Accuracy chart -->
+      <div class="glass panel" id="accuracy-panel">
+        <div class="panel-header">
+          <span class="panel-title">Global Model Accuracy</span>
+          <span class="panel-hint">per FL round</span>
+        </div>
+        <canvas id="accuracy-chart" height="180"></canvas>
+        <div class="chart-legend">
+          <span class="legend-dot" style="background:#00d4ff"></span> Global accuracy
+          <span class="legend-dot" style="background:#a855f7; margin-left:1rem"></span> Avg loss
+        </div>
+      </div>
+
+      <!-- Blockchain audit log -->
+      <div class="glass panel" id="audit-panel">
+        <div class="panel-header">
+          <span class="panel-title">🔗 Blockchain Audit Log</span>
+          <span class="panel-hint" id="audit-count">0 blocks</span>
+        </div>
+        <div class="audit-scroll" id="audit-log" role="log" aria-live="polite">
+          <div class="audit-placeholder">Waiting for simulation to start…</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Architecture diagram ────────────────────────────────── -->
+    <section class="glass panel arch-panel" id="arch-panel">
+      <div class="panel-header">
+        <span class="panel-title">System Architecture</span>
+        <span class="panel-hint">Conceptual dual-flow design</span>
+      </div>
+      <div class="arch-diagram">
+        <div class="arch-flow" id="data-flow">
+          <div class="flow-title cyan">DATA &amp; MODEL FLOW</div>
+          <div class="flow-nodes">
+            <div class="flow-node">Patient / Data Owner</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node highlight">Hospital EHR (local, off-chain)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node highlight">FL Client — local training</div>
+            <div class="flow-arrow">model updates only ↓</div>
+            <div class="flow-node accent-node">FL Aggregator (FedAvg)</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node">Updated Global Model</div>
+          </div>
+        </div>
+        <div class="arch-divider"></div>
+        <div class="arch-flow" id="trust-flow">
+          <div class="flow-title purple">TRUST &amp; AUDIT FLOW</div>
+          <div class="flow-nodes">
+            <div class="flow-node">Healthcare Institution</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node highlight">Permissioned Blockchain</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node">Smart Contracts</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node highlight">Access Control · Consent</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-node accent-node">Verifiable Audit Trail</div>
+          </div>
+        </div>
+        <div class="arch-legend">
+          <span class="legend-item"><span class="dot cyan-dot"></span>On-chain: hashes, access grants, audit entries</span>
+          <span class="legend-item"><span class="dot purple-dot"></span>Off-chain: raw EHRs, medical images (never leave hospital)</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>B.Tech Major Project · Blockchain + Federated Learning · Medical Record Sharing</span>
+    <span id="last-update">Last updated: —</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
