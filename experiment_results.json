@@ -1,0 +1,126 @@
+{
+  "dataset": "pima",
+  "split": {
+    "mode": "iid",
+    "n_train": 692,
+    "n_test": 76,
+    "hospital_stats": [
+      {
+        "hospital": "Hospital_A",
+        "n": 230,
+        "positive_rate": 0.3261
+      },
+      {
+        "hospital": "Hospital_B",
+        "n": 230,
+        "positive_rate": 0.3783
+      },
+      {
+        "hospital": "Hospital_C",
+        "n": 232,
+        "positive_rate": 0.3405
+      }
+    ]
+  },
+  "rounds": 3,
+  "elapsed_sec": 0.21,
+  "results": [
+    {
+      "name": "centralized_sgd",
+      "accuracy": 0.6842105263157895,
+      "auc": 0.8148148148148148,
+      "n_train": 692,
+      "n_test": 76
+    },
+    {
+      "name": "local_only",
+      "accuracy": 0.706140350877193,
+      "auc": 0.7548500881834216,
+      "per_hospital_accuracy": [
+        0.6447,
+        0.7763,
+        0.6974
+      ]
+    },
+    {
+      "name": "fedavg",
+      "accuracy": 0.75,
+      "auc": null,
+      "history": [
+        {
+          "round": 1,
+          "accuracy": 0.7368,
+          "avg_loss": 2.6034
+        },
+        {
+          "round": 2,
+          "accuracy": 0.7237,
+          "avg_loss": 2.6406
+        },
+        {
+          "round": 3,
+          "accuracy": 0.75,
+          "avg_loss": 2.3702
+        }
+      ],
+      "final_model_hash": "436e832d8b26c68b...",
+      "poison": null
+    },
+    {
+      "name": "fedavg_label_flip",
+      "accuracy": 0.7105,
+      "auc": null,
+      "history": [
+        {
+          "round": 1,
+          "accuracy": 0.6974,
+          "avg_loss": 2.6034
+        },
+        {
+          "round": 2,
+          "accuracy": 0.6053,
+          "avg_loss": 2.4569
+        },
+        {
+          "round": 3,
+          "accuracy": 0.7105,
+          "avg_loss": 2.7172
+        }
+      ],
+      "final_model_hash": "be0caf263e04edce...",
+      "poison": "label_flip",
+      "accuracy_drop_vs_fedavg": 0.0395
+    },
+    {
+      "name": "fedavg_weight_poison",
+      "accuracy": 0.3158,
+      "auc": null,
+      "history": [
+        {
+          "round": 1,
+          "accuracy": 0.3158,
+          "avg_loss": 2.6034
+        },
+        {
+          "round": 2,
+          "accuracy": 0.3026,
+          "avg_loss": 2.473
+        },
+        {
+          "round": 3,
+          "accuracy": 0.3158,
+          "avg_loss": 2.5313
+        }
+      ],
+      "final_model_hash": "2fd4bd200655d7bc...",
+      "poison": "weight_poison",
+      "accuracy_drop_vs_fedavg": 0.4342
+    },
+    {
+      "name": "chain_tamper",
+      "verify_before_expected": true,
+      "verify_after_tamper": false,
+      "assert_fails": true
+    }
+  ]
+}

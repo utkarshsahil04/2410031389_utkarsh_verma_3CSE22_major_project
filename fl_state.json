@@ -1,0 +1,370 @@
+{
+  "status": "complete",
+  "dataset": "pima",
+  "dataset_meta": {
+    "name": "pima",
+    "path": "D:\\COllege\\3rd Year\\major project\\code\\data\\diabetes.csv",
+    "n_rows": 768,
+    "n_features": 8,
+    "description": "PIMA Indians Diabetes (public benchmark)",
+    "centers": null
+  },
+  "split": {
+    "mode": "iid",
+    "n_train": 692,
+    "n_test": 76,
+    "hospital_stats": [
+      {
+        "hospital": "Hospital_A",
+        "n": 230,
+        "positive_rate": 0.3261
+      },
+      {
+        "hospital": "Hospital_B",
+        "n": 230,
+        "positive_rate": 0.3783
+      },
+      {
+        "hospital": "Hospital_C",
+        "n": 232,
+        "positive_rate": 0.3405
+      }
+    ]
+  },
+  "hospitals": {
+    "Hospital_A": {
+      "records": 230,
+      "registered": true,
+      "record_hash": "8a5ee6443827df56...",
+      "block_index": 1,
+      "positive_rate": 0.3261
+    },
+    "Hospital_B": {
+      "records": 230,
+      "registered": true,
+      "record_hash": "f7d3f13b1171d47e...",
+      "block_index": 2,
+      "positive_rate": 0.3783
+    },
+    "Hospital_C": {
+      "records": 232,
+      "registered": true,
+      "record_hash": "ba512e6ca39c2207...",
+      "block_index": 3,
+      "positive_rate": 0.3405
+    }
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "accuracy": 0.7368,
+      "avg_loss": 2.6034,
+      "client_losses": {
+        "hospital_1": 2.79,
+        "hospital_2": 2.4576,
+        "hospital_3": 2.5625
+      }
+    },
+    {
+      "round": 2,
+      "accuracy": 0.7237,
+      "avg_loss": 2.6406,
+      "client_losses": {
+        "hospital_1": 2.8374,
+        "hospital_2": 2.5375,
+        "hospital_3": 2.5469
+      }
+    },
+    {
+      "round": 3,
+      "accuracy": 0.75,
+      "avg_loss": 2.3702,
+      "client_losses": {
+        "hospital_1": 2.7739,
+        "hospital_2": 2.3511,
+        "hospital_3": 1.9856
+      }
+    },
+    {
+      "round": 4,
+      "accuracy": 0.7237,
+      "avg_loss": 2.2556,
+      "client_losses": {
+        "hospital_1": 2.2643,
+        "hospital_2": 2.4239,
+        "hospital_3": 2.0787
+      }
+    },
+    {
+      "round": 5,
+      "accuracy": 0.7763,
+      "avg_loss": 2.4093,
+      "client_losses": {
+        "hospital_1": 2.778,
+        "hospital_2": 2.0821,
+        "hospital_3": 2.3677
+      }
+    },
+    {
+      "round": 6,
+      "accuracy": 0.7632,
+      "avg_loss": 2.3206,
+      "client_losses": {
+        "hospital_1": 2.7284,
+        "hospital_2": 1.8643,
+        "hospital_3": 2.3692
+      }
+    },
+    {
+      "round": 7,
+      "accuracy": 0.7105,
+      "avg_loss": 2.5426,
+      "client_losses": {
+        "hospital_1": 3.024,
+        "hospital_2": 2.1974,
+        "hospital_3": 2.4063
+      }
+    },
+    {
+      "round": 8,
+      "accuracy": 0.7763,
+      "avg_loss": 2.4355,
+      "client_losses": {
+        "hospital_1": 2.8324,
+        "hospital_2": 2.2346,
+        "hospital_3": 2.2394
+      }
+    },
+    {
+      "round": 9,
+      "accuracy": 0.7368,
+      "avg_loss": 2.6198,
+      "client_losses": {
+        "hospital_1": 2.8189,
+        "hospital_2": 2.5057,
+        "hospital_3": 2.5348
+      }
+    },
+    {
+      "round": 10,
+      "accuracy": 0.7895,
+      "avg_loss": 2.6076,
+      "client_losses": {
+        "hospital_1": 2.9084,
+        "hospital_2": 2.5721,
+        "hospital_3": 2.3423
+      }
+    }
+  ],
+  "total_rounds": 10,
+  "current_round": 10,
+  "final_accuracy": 0.7895,
+  "chain_valid": true,
+  "chain_length": 76,
+  "replica_sync": {
+    "Hospital_A": {
+      "hospital_id": "Hospital_A",
+      "synced_height": 76,
+      "local_length": 76,
+      "last_sync_ok": true,
+      "rejected_blocks": 0,
+      "chain_valid": true,
+      "public_key": "9b96196a176f7153..."
+    },
+    "Hospital_B": {
+      "hospital_id": "Hospital_B",
+      "synced_height": 76,
+      "local_length": 76,
+      "last_sync_ok": true,
+      "rejected_blocks": 0,
+      "chain_valid": true,
+      "public_key": "36f2812e58f0755b..."
+    },
+    "Hospital_C": {
+      "hospital_id": "Hospital_C",
+      "synced_height": 76,
+      "local_length": 76,
+      "last_sync_ok": true,
+      "rejected_blocks": 0,
+      "chain_valid": true,
+      "public_key": "9b5db99e45101a0e..."
+    }
+  },
+  "update_hashes": [
+    {
+      "hospital": "Hospital_A",
+      "round": 1,
+      "update_hash": "2c8408b28c8df2de..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 1,
+      "update_hash": "cd6ed0267912b507..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 1,
+      "update_hash": "fae9122fdda7f46f..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 2,
+      "update_hash": "54149590bc89d547..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 2,
+      "update_hash": "9dbc798066be5824..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 2,
+      "update_hash": "de8421eaf1ee1564..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 3,
+      "update_hash": "2b74f036031e8c95..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 3,
+      "update_hash": "ff57317cd3959ca6..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 3,
+      "update_hash": "e6c48dc84cfa6ce8..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 4,
+      "update_hash": "f402bf9f4e9abe54..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 4,
+      "update_hash": "55e40d32a231cb53..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 4,
+      "update_hash": "81bf192b6c366ea9..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 5,
+      "update_hash": "33dec3d28b9f622a..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 5,
+      "update_hash": "a73f6c62381072e0..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 5,
+      "update_hash": "c6108ac7e5815fe5..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 6,
+      "update_hash": "b7804d0921396bad..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 6,
+      "update_hash": "21615aa05eee3185..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 6,
+      "update_hash": "59f1a76e8086d67e..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 7,
+      "update_hash": "e997d2f3378f5938..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 7,
+      "update_hash": "135c0a6945bda616..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 7,
+      "update_hash": "44c6aeae6e77b73f..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 8,
+      "update_hash": "d9c237c32a035074..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 8,
+      "update_hash": "16d28b965f45969c..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 8,
+      "update_hash": "5e96e6b3b7d21525..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 9,
+      "update_hash": "4074836a65c479f5..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 9,
+      "update_hash": "785d7d2b080d63bc..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 9,
+      "update_hash": "49824db390d8c913..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 10,
+      "update_hash": "b761f7e413b6f1f6..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 10,
+      "update_hash": "06f92863a136a08d..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 10,
+      "update_hash": "0842b245fd4d6988..."
+    }
+  ],
+  "consent_checks": [
+    {
+      "actor": "Hospital_B",
+      "ref": "8a5ee6443827df56...",
+      "allowed": true
+    },
+    {
+      "actor": "Hospital_C",
+      "ref": "8a5ee6443827df56...",
+      "allowed": false
+    }
+  ],
+  "chain_sync": {
+    "backend": "InProcessChain",
+    "length": 76,
+    "signed_blocks": 75,
+    "signer": "coordinator",
+    "known_nodes": [
+      "coordinator",
+      "Hospital_A",
+      "Hospital_B",
+      "Hospital_C"
+    ],
+    "chain_valid": true
+  }
+}

@@ -1,0 +1,1589 @@
+[
+  {
+    "index": 0,
+    "timestamp": 1793195427.7245965,
+    "data": {
+      "event": "genesis",
+      "description": "Blockchain initialized"
+    },
+    "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hash": "8ce7b4f78e9008f638f9e69b0321a4bbb70377a03381a7c0247270fc3a2f8ba0",
+    "signer_id": "genesis",
+    "public_key": "",
+    "signature": "",
+    "signature_valid": true
+  },
+  {
+    "index": 1,
+    "timestamp": 1793195427.736798,
+    "data": {
+      "event": "register_record",
+      "hospital": "Hospital_A",
+      "record_hash": "8a5ee6443827df56b8b313a9ad66b171fafa071e96d00c345e1825df3f15108e",
+      "metadata": {
+        "n_records": 230,
+        "n_features": 8,
+        "description": "EHR dataset shard \u2014 off-chain; only hash stored here",
+        "signer": "Hospital_A"
+      }
+    },
+    "previous_hash": "8ce7b4f78e9008f638f9e69b0321a4bbb70377a03381a7c0247270fc3a2f8ba0",
+    "hash": "1eb15e8f2206c9014d0cc407f0c1dc4a7a782d9a531004da25c24b29f91a8cae",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "35eba96b3a44bba5...",
+    "signature_valid": true
+  },
+  {
+    "index": 2,
+    "timestamp": 1793195427.7391422,
+    "data": {
+      "event": "register_record",
+      "hospital": "Hospital_B",
+      "record_hash": "f7d3f13b1171d47eac39ec272e58e432ca815fcbce635fc4075d56ed3a6bb2e1",
+      "metadata": {
+        "n_records": 230,
+        "n_features": 8,
+        "description": "EHR dataset shard \u2014 off-chain; only hash stored here",
+        "signer": "Hospital_B"
+      }
+    },
+    "previous_hash": "1eb15e8f2206c9014d0cc407f0c1dc4a7a782d9a531004da25c24b29f91a8cae",
+    "hash": "0e1e699d71d9e809ecc3b606c6e2334de896b016519b57e7affc30781fc43f24",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "78291937d92270df...",
+    "signature_valid": true
+  },
+  {
+    "index": 3,
+    "timestamp": 1793195427.7424083,
+    "data": {
+      "event": "register_record",
+      "hospital": "Hospital_C",
+      "record_hash": "ba512e6ca39c220745a0fe7a193074407520920dde477c7b8c1367c4fe2168ec",
+      "metadata": {
+        "n_records": 232,
+        "n_features": 8,
+        "description": "EHR dataset shard \u2014 off-chain; only hash stored here",
+        "signer": "Hospital_C"
+      }
+    },
+    "previous_hash": "0e1e699d71d9e809ecc3b606c6e2334de896b016519b57e7affc30781fc43f24",
+    "hash": "423b26341446d6f3ca20d807fcc022f151b7b0e8877acba66aa9737f7bf8f376",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "facf317493d49964...",
+    "signature_valid": true
+  },
+  {
+    "index": 4,
+    "timestamp": 1793195427.7434258,
+    "data": {
+      "event": "grant_access",
+      "from": "Hospital_A",
+      "to": "Hospital_B",
+      "record_hash": "8a5ee6443827df56b8b313a9ad66b171fafa071e96d00c345e1825df3f15108e"
+    },
+    "previous_hash": "423b26341446d6f3ca20d807fcc022f151b7b0e8877acba66aa9737f7bf8f376",
+    "hash": "6ef6c3c7e99b09442aeab8aeb353d2ac1a15e6b521c162abe1d5381fcf68176c",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "96f71e4bc881c917...",
+    "signature_valid": true
+  },
+  {
+    "index": 5,
+    "timestamp": 1793195427.7480474,
+    "data": {
+      "event": "fl_session_start",
+      "actor": "coordinator",
+      "details": {
+        "rounds": 10,
+        "hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "dataset": "pima",
+        "split": "iid"
+      }
+    },
+    "previous_hash": "6ef6c3c7e99b09442aeab8aeb353d2ac1a15e6b521c162abe1d5381fcf68176c",
+    "hash": "7748118e8cb648b4f97d7ee87c9243ea463e3d9f5acec33bdbd551a9b5e43bbf",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "b7c009409586add1...",
+    "signature_valid": true
+  },
+  {
+    "index": 6,
+    "timestamp": 1793195427.7546165,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 1,
+        "n_samples": 230,
+        "local_loss": 2.79,
+        "update_hash": "2c8408b28c8df2de254a91c85183d7f7e23ef0b252487029593681e6d2c7edee"
+      }
+    },
+    "previous_hash": "7748118e8cb648b4f97d7ee87c9243ea463e3d9f5acec33bdbd551a9b5e43bbf",
+    "hash": "973961adcf7c57193d585b534fb19df6d9234b022a27b64352dac6fe886ffd9a",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "274b44f6f4fe6c46...",
+    "signature_valid": true
+  },
+  {
+    "index": 7,
+    "timestamp": 1793195427.7546165,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 1,
+        "update_hash": "2c8408b28c8df2de254a91c85183d7f7e23ef0b252487029593681e6d2c7edee",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "973961adcf7c57193d585b534fb19df6d9234b022a27b64352dac6fe886ffd9a",
+    "hash": "0ea86db20e30101731fa2fd0c26221320de5453486f8cbfc1d88cdc0b1500f75",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "e00cb6d89df290a3...",
+    "signature_valid": true
+  },
+  {
+    "index": 8,
+    "timestamp": 1793195427.757514,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 1,
+        "n_samples": 230,
+        "local_loss": 2.4576,
+        "update_hash": "cd6ed0267912b5070987d9f73bcf502e48ee1e22bd08c51f6ee7da4b2cf17457"
+      }
+    },
+    "previous_hash": "0ea86db20e30101731fa2fd0c26221320de5453486f8cbfc1d88cdc0b1500f75",
+    "hash": "7d375b9d934c2a5cfe3e2fa3ded92aa9b9ce10e1109aa2cc38d146c1be3d1ea9",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "ee1ff02371beb27c...",
+    "signature_valid": true
+  },
+  {
+    "index": 9,
+    "timestamp": 1793195427.757514,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 1,
+        "update_hash": "cd6ed0267912b5070987d9f73bcf502e48ee1e22bd08c51f6ee7da4b2cf17457",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "7d375b9d934c2a5cfe3e2fa3ded92aa9b9ce10e1109aa2cc38d146c1be3d1ea9",
+    "hash": "bc6087b4d0e17d785069360a91dea3da7bb980817598b44e3a840f875cd5ac02",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "5a01232c998c7161...",
+    "signature_valid": true
+  },
+  {
+    "index": 10,
+    "timestamp": 1793195427.7624402,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 1,
+        "n_samples": 232,
+        "local_loss": 2.5625,
+        "update_hash": "fae9122fdda7f46f0b6d3e34a05c68155ee5ce3e495e22d1a5ab331003ac2678"
+      }
+    },
+    "previous_hash": "bc6087b4d0e17d785069360a91dea3da7bb980817598b44e3a840f875cd5ac02",
+    "hash": "fb6a100dc64a5b4db17709455942d62813e76d6c17a9286c01eda3645960096d",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "e7adcdebc46bb5aa...",
+    "signature_valid": true
+  },
+  {
+    "index": 11,
+    "timestamp": 1793195427.7639377,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 1,
+        "update_hash": "fae9122fdda7f46f0b6d3e34a05c68155ee5ce3e495e22d1a5ab331003ac2678",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "fb6a100dc64a5b4db17709455942d62813e76d6c17a9286c01eda3645960096d",
+    "hash": "00c59f90b47797b3fd5c2a8ad08ca0386aeeada0c2413b098ecafcff73ec18b4",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "7b115999c09cb85b...",
+    "signature_valid": true
+  },
+  {
+    "index": 12,
+    "timestamp": 1793195427.7687182,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 1,
+        "accuracy": 0.7368,
+        "avg_loss": 2.6034,
+        "model_hash": "a35e1c14faa342be...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "2c8408b28c8df2de...",
+          "cd6ed0267912b507...",
+          "fae9122fdda7f46f..."
+        ]
+      }
+    },
+    "previous_hash": "00c59f90b47797b3fd5c2a8ad08ca0386aeeada0c2413b098ecafcff73ec18b4",
+    "hash": "43534466a2f7c9dd8e3b5470cacf5c90049d630e4dbd3ad5f6f0c54644de655d",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "b8e8c9c1e3ae3fd6...",
+    "signature_valid": true
+  },
+  {
+    "index": 13,
+    "timestamp": 1793195428.3884294,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 2,
+        "n_samples": 230,
+        "local_loss": 2.8374,
+        "update_hash": "54149590bc89d547fefed8a0a086ab5db8439ec3ca2045911eae5a25f13b2dd0"
+      }
+    },
+    "previous_hash": "43534466a2f7c9dd8e3b5470cacf5c90049d630e4dbd3ad5f6f0c54644de655d",
+    "hash": "4754d83446eee378c8c2ecf0dd32005dabd75b6ad224e9b653b7e45b94058bba",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "cb1f50adc4a32979...",
+    "signature_valid": true
+  },
+  {
+    "index": 14,
+    "timestamp": 1793195428.3884294,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 2,
+        "update_hash": "54149590bc89d547fefed8a0a086ab5db8439ec3ca2045911eae5a25f13b2dd0",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "4754d83446eee378c8c2ecf0dd32005dabd75b6ad224e9b653b7e45b94058bba",
+    "hash": "6ffc8a8d3f33ae50243d67a68276db8631d49a5f8477ebe150f1090b4c8fde4c",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "34e301edff617df0...",
+    "signature_valid": true
+  },
+  {
+    "index": 15,
+    "timestamp": 1793195428.3884294,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 2,
+        "n_samples": 230,
+        "local_loss": 2.5375,
+        "update_hash": "9dbc798066be58243fda8f7abe69043b918dbddeb572dd9b6e5bd941205ed048"
+      }
+    },
+    "previous_hash": "6ffc8a8d3f33ae50243d67a68276db8631d49a5f8477ebe150f1090b4c8fde4c",
+    "hash": "85ab30fea1e42a72dc29e8572937a09cc022f89b303148a1f7dc01899c656a78",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9e4358c23e4e6383...",
+    "signature_valid": true
+  },
+  {
+    "index": 16,
+    "timestamp": 1793195428.3884294,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 2,
+        "update_hash": "9dbc798066be58243fda8f7abe69043b918dbddeb572dd9b6e5bd941205ed048",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "85ab30fea1e42a72dc29e8572937a09cc022f89b303148a1f7dc01899c656a78",
+    "hash": "c9f120a3f2cb4fbf74bfc9b3a9469052fa0a9ba3b2cef0e15490590cd32c58a6",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "444c9347ef3ba482...",
+    "signature_valid": true
+  },
+  {
+    "index": 17,
+    "timestamp": 1793195428.3980343,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 2,
+        "n_samples": 232,
+        "local_loss": 2.5469,
+        "update_hash": "de8421eaf1ee156492d5187937b53686850f327c5be695f12148f657becbd239"
+      }
+    },
+    "previous_hash": "c9f120a3f2cb4fbf74bfc9b3a9469052fa0a9ba3b2cef0e15490590cd32c58a6",
+    "hash": "5252f9f5ffeea1f14c3acc7a9dc116820e9dc59a7359b1907075ddac7b0d9a3e",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "d07a179dcc6178be...",
+    "signature_valid": true
+  },
+  {
+    "index": 18,
+    "timestamp": 1793195428.3980343,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 2,
+        "update_hash": "de8421eaf1ee156492d5187937b53686850f327c5be695f12148f657becbd239",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "5252f9f5ffeea1f14c3acc7a9dc116820e9dc59a7359b1907075ddac7b0d9a3e",
+    "hash": "55a427fdbfd49234c3aac33a59c8908254f9f8720233adf085c597b89746f57f",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "fc4d4e8d1ba5d5d4...",
+    "signature_valid": true
+  },
+  {
+    "index": 19,
+    "timestamp": 1793195428.3980343,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 2,
+        "accuracy": 0.7237,
+        "avg_loss": 2.6406,
+        "model_hash": "12e5e06eb9cf3eb3...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "54149590bc89d547...",
+          "9dbc798066be5824...",
+          "de8421eaf1ee1564..."
+        ]
+      }
+    },
+    "previous_hash": "55a427fdbfd49234c3aac33a59c8908254f9f8720233adf085c597b89746f57f",
+    "hash": "4d0d86e2c7488852dbfc6cbe1530400d7a5c062f3cfa5687ca7dc745425e485e",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "f4711cb5c44e5ca5...",
+    "signature_valid": true
+  },
+  {
+    "index": 20,
+    "timestamp": 1793195429.0458412,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 3,
+        "n_samples": 230,
+        "local_loss": 2.7739,
+        "update_hash": "2b74f036031e8c9565c6dd492f9f0b314ce80e05e6eadf132f1a0371298d6cb5"
+      }
+    },
+    "previous_hash": "4d0d86e2c7488852dbfc6cbe1530400d7a5c062f3cfa5687ca7dc745425e485e",
+    "hash": "2a7b3d132a857f217ae7246606cfa05e4e06f3ec496205c2f0654d9fc458b392",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "6561d58bbadea0b6...",
+    "signature_valid": true
+  },
+  {
+    "index": 21,
+    "timestamp": 1793195429.0458412,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 3,
+        "update_hash": "2b74f036031e8c9565c6dd492f9f0b314ce80e05e6eadf132f1a0371298d6cb5",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "2a7b3d132a857f217ae7246606cfa05e4e06f3ec496205c2f0654d9fc458b392",
+    "hash": "6fc6dc1a6981b63d4b279cec2eebb9d1dc15c1554a2bf9e0b12aa65594adbd36",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "dc17faf9ad7502e2...",
+    "signature_valid": true
+  },
+  {
+    "index": 22,
+    "timestamp": 1793195429.0558772,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 3,
+        "n_samples": 230,
+        "local_loss": 2.3511,
+        "update_hash": "ff57317cd3959ca642748083cf6b48268ed173c9a8a9823eb95efcf0bfc02abd"
+      }
+    },
+    "previous_hash": "6fc6dc1a6981b63d4b279cec2eebb9d1dc15c1554a2bf9e0b12aa65594adbd36",
+    "hash": "5b465088293f46ae5d12e87b30aa2456b64e7e6cc3317a096a8dba23d8ae50eb",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9e489dec6f3c3f45...",
+    "signature_valid": true
+  },
+  {
+    "index": 23,
+    "timestamp": 1793195429.0558772,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 3,
+        "update_hash": "ff57317cd3959ca642748083cf6b48268ed173c9a8a9823eb95efcf0bfc02abd",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "5b465088293f46ae5d12e87b30aa2456b64e7e6cc3317a096a8dba23d8ae50eb",
+    "hash": "a100922402070ce29dd73de6f698a864f44bc434a6719158446eb3e9e34caad4",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "6f3a4e202cc82212...",
+    "signature_valid": true
+  },
+  {
+    "index": 24,
+    "timestamp": 1793195429.0599,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 3,
+        "n_samples": 232,
+        "local_loss": 1.9856,
+        "update_hash": "e6c48dc84cfa6ce8186b91e5e15717c6152edaa36134e8bec358b4b53080ad2c"
+      }
+    },
+    "previous_hash": "a100922402070ce29dd73de6f698a864f44bc434a6719158446eb3e9e34caad4",
+    "hash": "e63f96a7682279b3e07a59fdd4e429ccff7edd2f86990c58a16dc4c648b0ccf3",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "23200a02c3208657...",
+    "signature_valid": true
+  },
+  {
+    "index": 25,
+    "timestamp": 1793195429.0599,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 3,
+        "update_hash": "e6c48dc84cfa6ce8186b91e5e15717c6152edaa36134e8bec358b4b53080ad2c",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "e63f96a7682279b3e07a59fdd4e429ccff7edd2f86990c58a16dc4c648b0ccf3",
+    "hash": "1acf744aab372c824f9172cdb6624173b3aad955e85f90c3277136ffdb9d90cf",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9c35f47e3b2f3023...",
+    "signature_valid": true
+  },
+  {
+    "index": 26,
+    "timestamp": 1793195429.0769203,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 3,
+        "accuracy": 0.75,
+        "avg_loss": 2.3702,
+        "model_hash": "436e832d8b26c68b...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "2b74f036031e8c95...",
+          "ff57317cd3959ca6...",
+          "e6c48dc84cfa6ce8..."
+        ]
+      }
+    },
+    "previous_hash": "1acf744aab372c824f9172cdb6624173b3aad955e85f90c3277136ffdb9d90cf",
+    "hash": "5a41429c79e0feef6aba7906d44b9ac9cccb5df323e63e1b2be7d39bca52ec02",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9c395ecc8df4835f...",
+    "signature_valid": true
+  },
+  {
+    "index": 27,
+    "timestamp": 1793195429.7221713,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 4,
+        "n_samples": 230,
+        "local_loss": 2.2643,
+        "update_hash": "f402bf9f4e9abe54d52cb343c8753b701750c24d97bd442a8d6a422e9405f95d"
+      }
+    },
+    "previous_hash": "5a41429c79e0feef6aba7906d44b9ac9cccb5df323e63e1b2be7d39bca52ec02",
+    "hash": "6bbc4e96d430f639486d3cb78693d3b3fdb2d29757ea50ebf4300682ff775d21",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "b1191f35d5a6aca1...",
+    "signature_valid": true
+  },
+  {
+    "index": 28,
+    "timestamp": 1793195429.7221713,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 4,
+        "update_hash": "f402bf9f4e9abe54d52cb343c8753b701750c24d97bd442a8d6a422e9405f95d",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "6bbc4e96d430f639486d3cb78693d3b3fdb2d29757ea50ebf4300682ff775d21",
+    "hash": "9333d4fc071656f4cff44c6f0ed7ef2aa2adf9c25a7cddaf214b716164e92f88",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "be7e09c94d9fec04...",
+    "signature_valid": true
+  },
+  {
+    "index": 29,
+    "timestamp": 1793195429.7221713,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 4,
+        "n_samples": 230,
+        "local_loss": 2.4239,
+        "update_hash": "55e40d32a231cb5390a2178a0f917ef016bf496bd59303266169a72caf4d1f55"
+      }
+    },
+    "previous_hash": "9333d4fc071656f4cff44c6f0ed7ef2aa2adf9c25a7cddaf214b716164e92f88",
+    "hash": "405d1d0aae2e8ecf90d801a38809668c26807f9aab2afe31ffa16cd03e6c3cdf",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "5ae4d7c876daca48...",
+    "signature_valid": true
+  },
+  {
+    "index": 30,
+    "timestamp": 1793195429.7221713,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 4,
+        "update_hash": "55e40d32a231cb5390a2178a0f917ef016bf496bd59303266169a72caf4d1f55",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "405d1d0aae2e8ecf90d801a38809668c26807f9aab2afe31ffa16cd03e6c3cdf",
+    "hash": "15b315c52e8c575ed62615ffbfcc0fecc53ab4edf16a913399d861d74306653b",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "3f25fae5a0cb0fb0...",
+    "signature_valid": true
+  },
+  {
+    "index": 31,
+    "timestamp": 1793195429.736301,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 4,
+        "n_samples": 232,
+        "local_loss": 2.0787,
+        "update_hash": "81bf192b6c366ea9c2a2e51d0e9da870f6e991c9ba8c11e6ab8c47c89db95f72"
+      }
+    },
+    "previous_hash": "15b315c52e8c575ed62615ffbfcc0fecc53ab4edf16a913399d861d74306653b",
+    "hash": "0471df9e01376ecccf4cc20a5a43ae976fe722706f917080a2e3a9b3f69a63db",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "18040bb7e1863bd3...",
+    "signature_valid": true
+  },
+  {
+    "index": 32,
+    "timestamp": 1793195429.736301,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 4,
+        "update_hash": "81bf192b6c366ea9c2a2e51d0e9da870f6e991c9ba8c11e6ab8c47c89db95f72",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "0471df9e01376ecccf4cc20a5a43ae976fe722706f917080a2e3a9b3f69a63db",
+    "hash": "be40d31f4631409424b7c5287e9ff4e213c85a764703bd511a4e99817c9d1cad",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "14ac08b95cd1403d...",
+    "signature_valid": true
+  },
+  {
+    "index": 33,
+    "timestamp": 1793195429.752133,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 4,
+        "accuracy": 0.7237,
+        "avg_loss": 2.2556,
+        "model_hash": "cd946d34be822a92...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "f402bf9f4e9abe54...",
+          "55e40d32a231cb53...",
+          "81bf192b6c366ea9..."
+        ]
+      }
+    },
+    "previous_hash": "be40d31f4631409424b7c5287e9ff4e213c85a764703bd511a4e99817c9d1cad",
+    "hash": "f4e368c85fd37351ae8351dc5580376f310eacb6c37018aa086d7977b55c73b9",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "345b64697b35b875...",
+    "signature_valid": true
+  },
+  {
+    "index": 34,
+    "timestamp": 1793195430.4179702,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 5,
+        "n_samples": 230,
+        "local_loss": 2.778,
+        "update_hash": "33dec3d28b9f622aedef6d1f10268d1e75cb2a38ed6849b35d5699527ca20a75"
+      }
+    },
+    "previous_hash": "f4e368c85fd37351ae8351dc5580376f310eacb6c37018aa086d7977b55c73b9",
+    "hash": "a9e088f637857ac38b4d128b03318170cb86b7e181fef68ff88dc6185fed1570",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "0cc66858621cf32a...",
+    "signature_valid": true
+  },
+  {
+    "index": 35,
+    "timestamp": 1793195430.4179702,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 5,
+        "update_hash": "33dec3d28b9f622aedef6d1f10268d1e75cb2a38ed6849b35d5699527ca20a75",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "a9e088f637857ac38b4d128b03318170cb86b7e181fef68ff88dc6185fed1570",
+    "hash": "a2dcc1b4b43901a7c20653b59392183934382c29513f5236f2a8d21782e8b1b0",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "f6985e3fcd7ee73c...",
+    "signature_valid": true
+  },
+  {
+    "index": 36,
+    "timestamp": 1793195430.4334774,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 5,
+        "n_samples": 230,
+        "local_loss": 2.0821,
+        "update_hash": "a73f6c62381072e089661f67c0b886ce245746fbf9dc42d3052094851860aa16"
+      }
+    },
+    "previous_hash": "a2dcc1b4b43901a7c20653b59392183934382c29513f5236f2a8d21782e8b1b0",
+    "hash": "bc43dbef0c4054dc74dbd8607d8c7553ddadf50dcedf291ff5b0bd8aa595aaac",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9756f8d7695f5cf2...",
+    "signature_valid": true
+  },
+  {
+    "index": 37,
+    "timestamp": 1793195430.4334774,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 5,
+        "update_hash": "a73f6c62381072e089661f67c0b886ce245746fbf9dc42d3052094851860aa16",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "bc43dbef0c4054dc74dbd8607d8c7553ddadf50dcedf291ff5b0bd8aa595aaac",
+    "hash": "8dbb30fc655b310da7cbd2180ea904cadae57960f3df747acd3bc6b8502f923b",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "720a8e6bb99274a3...",
+    "signature_valid": true
+  },
+  {
+    "index": 38,
+    "timestamp": 1793195430.4516027,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 5,
+        "n_samples": 232,
+        "local_loss": 2.3677,
+        "update_hash": "c6108ac7e5815fe56aebcd48d57473dfd4085524406bd1dd053b61e4d802daeb"
+      }
+    },
+    "previous_hash": "8dbb30fc655b310da7cbd2180ea904cadae57960f3df747acd3bc6b8502f923b",
+    "hash": "d047e70437b1324f81916dcdf07fffbe2a56b64ff61b577b7bc98d23a499cb53",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "6059f1dc3e18171b...",
+    "signature_valid": true
+  },
+  {
+    "index": 39,
+    "timestamp": 1793195430.4516027,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 5,
+        "update_hash": "c6108ac7e5815fe56aebcd48d57473dfd4085524406bd1dd053b61e4d802daeb",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "d047e70437b1324f81916dcdf07fffbe2a56b64ff61b577b7bc98d23a499cb53",
+    "hash": "a9731809374739f4184bc377cc583decbdc4575540b3b67d54525b4cd015460e",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "2da0c3d5182cb964...",
+    "signature_valid": true
+  },
+  {
+    "index": 40,
+    "timestamp": 1793195430.4661412,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 5,
+        "accuracy": 0.7763,
+        "avg_loss": 2.4093,
+        "model_hash": "affd25c72a6ecf1c...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "33dec3d28b9f622a...",
+          "a73f6c62381072e0...",
+          "c6108ac7e5815fe5..."
+        ]
+      }
+    },
+    "previous_hash": "a9731809374739f4184bc377cc583decbdc4575540b3b67d54525b4cd015460e",
+    "hash": "1c35b28a1c24fa49146c613cbec707c4b4357d90f05a59ca80dd6f3a71116021",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "661d00b0bc279bb3...",
+    "signature_valid": true
+  },
+  {
+    "index": 41,
+    "timestamp": 1793195431.1366587,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 6,
+        "n_samples": 230,
+        "local_loss": 2.7284,
+        "update_hash": "b7804d0921396badec50a2fc88f4df8a6ee1fca489d546f42ee8fcef27173ffd"
+      }
+    },
+    "previous_hash": "1c35b28a1c24fa49146c613cbec707c4b4357d90f05a59ca80dd6f3a71116021",
+    "hash": "bde53ea0cff9666e004965cde9326f2d3abb6b675f262ab51a747d737f32fa95",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "71c552da32cf7425...",
+    "signature_valid": true
+  },
+  {
+    "index": 42,
+    "timestamp": 1793195431.1366587,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 6,
+        "update_hash": "b7804d0921396badec50a2fc88f4df8a6ee1fca489d546f42ee8fcef27173ffd",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "bde53ea0cff9666e004965cde9326f2d3abb6b675f262ab51a747d737f32fa95",
+    "hash": "c2e863e259d19cb3a1a5a5718f779dab7cb23dcb051130ac400751b0b3a804bc",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "439a567ee5ddb5b3...",
+    "signature_valid": true
+  },
+  {
+    "index": 43,
+    "timestamp": 1793195431.1549249,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 6,
+        "n_samples": 230,
+        "local_loss": 1.8643,
+        "update_hash": "21615aa05eee3185853cf60f9120bf3d1a349b5ae80def0667fbbf949716bd17"
+      }
+    },
+    "previous_hash": "c2e863e259d19cb3a1a5a5718f779dab7cb23dcb051130ac400751b0b3a804bc",
+    "hash": "5729744fe77bd48a3637c1c55fa73576b5e3cd37d538936f3a6eee01b7c65ac9",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "7ab22c0b89e90117...",
+    "signature_valid": true
+  },
+  {
+    "index": 44,
+    "timestamp": 1793195431.1549249,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 6,
+        "update_hash": "21615aa05eee3185853cf60f9120bf3d1a349b5ae80def0667fbbf949716bd17",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "5729744fe77bd48a3637c1c55fa73576b5e3cd37d538936f3a6eee01b7c65ac9",
+    "hash": "66db4ec8326bb80405a2f3dd094ccbc63bddf08297feec2138ba47f02cc415e4",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9a5b727ae344b6e3...",
+    "signature_valid": true
+  },
+  {
+    "index": 45,
+    "timestamp": 1793195431.1728275,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 6,
+        "n_samples": 232,
+        "local_loss": 2.3692,
+        "update_hash": "59f1a76e8086d67e7a5cd90f45dd7b68f8b28e09d1ec592d49d05d5a03647274"
+      }
+    },
+    "previous_hash": "66db4ec8326bb80405a2f3dd094ccbc63bddf08297feec2138ba47f02cc415e4",
+    "hash": "970c77ce5c78d4c3d99742bbe36deaa75faccfc732c55e1e8b8427de24785d26",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "f0039301fad65064...",
+    "signature_valid": true
+  },
+  {
+    "index": 46,
+    "timestamp": 1793195431.1728275,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 6,
+        "update_hash": "59f1a76e8086d67e7a5cd90f45dd7b68f8b28e09d1ec592d49d05d5a03647274",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "970c77ce5c78d4c3d99742bbe36deaa75faccfc732c55e1e8b8427de24785d26",
+    "hash": "3a73eefb4d1a68c809537e03a3900f59cf03916cb8b404bc805347242d95eac0",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "7fc8875f55533f5e...",
+    "signature_valid": true
+  },
+  {
+    "index": 47,
+    "timestamp": 1793195431.1895592,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 6,
+        "accuracy": 0.7632,
+        "avg_loss": 2.3206,
+        "model_hash": "4b443a9119b1d8ce...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "b7804d0921396bad...",
+          "21615aa05eee3185...",
+          "59f1a76e8086d67e..."
+        ]
+      }
+    },
+    "previous_hash": "3a73eefb4d1a68c809537e03a3900f59cf03916cb8b404bc805347242d95eac0",
+    "hash": "54d2d1d838c4fabe42fa7570234811ab5873d6a17bc0390f42cb6b94e06389b7",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "1397246168d54506...",
+    "signature_valid": true
+  },
+  {
+    "index": 48,
+    "timestamp": 1793195431.8711276,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 7,
+        "n_samples": 230,
+        "local_loss": 3.024,
+        "update_hash": "e997d2f3378f5938469d09e1a31b67f7c197322bd66b389587a5354e79cc2223"
+      }
+    },
+    "previous_hash": "54d2d1d838c4fabe42fa7570234811ab5873d6a17bc0390f42cb6b94e06389b7",
+    "hash": "6afd71c3a7b2c461ba8bf8ea95a621631c1eec30398d058e9e1e47e018882b82",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "b869d2304d4ba869...",
+    "signature_valid": true
+  },
+  {
+    "index": 49,
+    "timestamp": 1793195431.8711276,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 7,
+        "update_hash": "e997d2f3378f5938469d09e1a31b67f7c197322bd66b389587a5354e79cc2223",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "6afd71c3a7b2c461ba8bf8ea95a621631c1eec30398d058e9e1e47e018882b82",
+    "hash": "156c4bf1862a6f81b0eb704ede176b1ca79f6cad5f2107094c5a3ef0caa9be17",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "7dc0742ca498a577...",
+    "signature_valid": true
+  },
+  {
+    "index": 50,
+    "timestamp": 1793195431.8878598,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 7,
+        "n_samples": 230,
+        "local_loss": 2.1974,
+        "update_hash": "135c0a6945bda6160aa393496e01d38b2ed6c0633d9496f3a5f259562a900a67"
+      }
+    },
+    "previous_hash": "156c4bf1862a6f81b0eb704ede176b1ca79f6cad5f2107094c5a3ef0caa9be17",
+    "hash": "581ef6e405ad6f7f787dcafc542a8fff2e4f6a689c1aa7540a212ca12291f403",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "78d606743c25bf85...",
+    "signature_valid": true
+  },
+  {
+    "index": 51,
+    "timestamp": 1793195431.8878598,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 7,
+        "update_hash": "135c0a6945bda6160aa393496e01d38b2ed6c0633d9496f3a5f259562a900a67",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "581ef6e405ad6f7f787dcafc542a8fff2e4f6a689c1aa7540a212ca12291f403",
+    "hash": "9bd9960c658184928807a126a78eacfcacde3edfa68f789e456699342e5eef67",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "388b4b03c3766dc1...",
+    "signature_valid": true
+  },
+  {
+    "index": 52,
+    "timestamp": 1793195431.9043503,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 7,
+        "n_samples": 232,
+        "local_loss": 2.4063,
+        "update_hash": "44c6aeae6e77b73fcc189be7190dc962be2e90a7cc72dadf482eb99b5c8a5594"
+      }
+    },
+    "previous_hash": "9bd9960c658184928807a126a78eacfcacde3edfa68f789e456699342e5eef67",
+    "hash": "4f22c5ff6f414fbf8260bc2bed09acef3204fe7025e71e136c0707c5dbacf07c",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "81f754d0a42504dc...",
+    "signature_valid": true
+  },
+  {
+    "index": 53,
+    "timestamp": 1793195431.9043503,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 7,
+        "update_hash": "44c6aeae6e77b73fcc189be7190dc962be2e90a7cc72dadf482eb99b5c8a5594",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "4f22c5ff6f414fbf8260bc2bed09acef3204fe7025e71e136c0707c5dbacf07c",
+    "hash": "c2dcbd16f850b3c23e75ef0ff0df546fe4f6285531492dc459271a8e4be3e6f3",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "c076473960e55fe7...",
+    "signature_valid": true
+  },
+  {
+    "index": 54,
+    "timestamp": 1793195431.9183881,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 7,
+        "accuracy": 0.7105,
+        "avg_loss": 2.5426,
+        "model_hash": "1f859a10be696c44...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "e997d2f3378f5938...",
+          "135c0a6945bda616...",
+          "44c6aeae6e77b73f..."
+        ]
+      }
+    },
+    "previous_hash": "c2dcbd16f850b3c23e75ef0ff0df546fe4f6285531492dc459271a8e4be3e6f3",
+    "hash": "5159a474347890f9d3f17476c07d4d01c98e30361d9a5fbf6251aca8155777a1",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "04a42c98aadec39c...",
+    "signature_valid": true
+  },
+  {
+    "index": 55,
+    "timestamp": 1793195432.6249673,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 8,
+        "n_samples": 230,
+        "local_loss": 2.8324,
+        "update_hash": "d9c237c32a0350741d03f9cd722cffe7331d47694ff390accadbe357c507b562"
+      }
+    },
+    "previous_hash": "5159a474347890f9d3f17476c07d4d01c98e30361d9a5fbf6251aca8155777a1",
+    "hash": "35abd77ebf636b4189ad74cac60757de2e6a0962fe2a05fbd6a1d606f18ab3dc",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "0c523fb6810ef05f...",
+    "signature_valid": true
+  },
+  {
+    "index": 56,
+    "timestamp": 1793195432.6249673,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 8,
+        "update_hash": "d9c237c32a0350741d03f9cd722cffe7331d47694ff390accadbe357c507b562",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "35abd77ebf636b4189ad74cac60757de2e6a0962fe2a05fbd6a1d606f18ab3dc",
+    "hash": "2f39d25ba1e64e12f3eb2b47d7dc8676e6cc29ab4b361a1efbfa5d7d7d45e1c6",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "25bee9a4653b2005...",
+    "signature_valid": true
+  },
+  {
+    "index": 57,
+    "timestamp": 1793195432.6495926,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 8,
+        "n_samples": 230,
+        "local_loss": 2.2346,
+        "update_hash": "16d28b965f45969cfd7ef300627465b64d2411824b943b11d1bf6d3bd51a7bea"
+      }
+    },
+    "previous_hash": "2f39d25ba1e64e12f3eb2b47d7dc8676e6cc29ab4b361a1efbfa5d7d7d45e1c6",
+    "hash": "7b5a877e2eed87b5cee9391cc0fceb1430cbbc50d055e45fcf9e7379c859f954",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "af98a7740d1cd210...",
+    "signature_valid": true
+  },
+  {
+    "index": 58,
+    "timestamp": 1793195432.6495926,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 8,
+        "update_hash": "16d28b965f45969cfd7ef300627465b64d2411824b943b11d1bf6d3bd51a7bea",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "7b5a877e2eed87b5cee9391cc0fceb1430cbbc50d055e45fcf9e7379c859f954",
+    "hash": "7609fa77a9cb5b1e44102c35748a864847764aeb544bf9e06e2fdd3957bc288a",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "e590e320179b7955...",
+    "signature_valid": true
+  },
+  {
+    "index": 59,
+    "timestamp": 1793195432.673301,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 8,
+        "n_samples": 232,
+        "local_loss": 2.2394,
+        "update_hash": "5e96e6b3b7d21525b4c1a2f9e6c341b8f7529daf02bf33fd8254cdd920347926"
+      }
+    },
+    "previous_hash": "7609fa77a9cb5b1e44102c35748a864847764aeb544bf9e06e2fdd3957bc288a",
+    "hash": "ce2df48741bc5c5178421400826db566e72737c62cbfb6eccd4f5073005ee15f",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "b11a2730e4e46ef2...",
+    "signature_valid": true
+  },
+  {
+    "index": 60,
+    "timestamp": 1793195432.673301,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 8,
+        "update_hash": "5e96e6b3b7d21525b4c1a2f9e6c341b8f7529daf02bf33fd8254cdd920347926",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "ce2df48741bc5c5178421400826db566e72737c62cbfb6eccd4f5073005ee15f",
+    "hash": "6813f30b20d1ec61a262d6cd4e1515fcb289e906f22cbd2d54a59d76da803989",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "9b72fe72da4e418e...",
+    "signature_valid": true
+  },
+  {
+    "index": 61,
+    "timestamp": 1793195432.690386,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 8,
+        "accuracy": 0.7763,
+        "avg_loss": 2.4355,
+        "model_hash": "0c8385e5bba11024...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "d9c237c32a035074...",
+          "16d28b965f45969c...",
+          "5e96e6b3b7d21525..."
+        ]
+      }
+    },
+    "previous_hash": "6813f30b20d1ec61a262d6cd4e1515fcb289e906f22cbd2d54a59d76da803989",
+    "hash": "95a1036b8344bd6c47aea3955d387893743c12719765dab85a133cb7e85d4e1d",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "f864420fafdbf8ba...",
+    "signature_valid": true
+  },
+  {
+    "index": 62,
+    "timestamp": 1793195433.3990524,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 9,
+        "n_samples": 230,
+        "local_loss": 2.8189,
+        "update_hash": "4074836a65c479f536e256bbac64a80ef9c7942985057aca150174ef89a2d469"
+      }
+    },
+    "previous_hash": "95a1036b8344bd6c47aea3955d387893743c12719765dab85a133cb7e85d4e1d",
+    "hash": "063e91780b65ff58f37d8f83df1af9aae5dbbc25364d94e8c6b5f3541fb3b9bd",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "8bda6c6ac1bdd654...",
+    "signature_valid": true
+  },
+  {
+    "index": 63,
+    "timestamp": 1793195433.3990524,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 9,
+        "update_hash": "4074836a65c479f536e256bbac64a80ef9c7942985057aca150174ef89a2d469",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "063e91780b65ff58f37d8f83df1af9aae5dbbc25364d94e8c6b5f3541fb3b9bd",
+    "hash": "53f6412515d022ab4560ff397c97d4b440057f679f2f6f5ff8f5d41a5a5eded3",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "e172a107350df48b...",
+    "signature_valid": true
+  },
+  {
+    "index": 64,
+    "timestamp": 1793195433.4127288,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 9,
+        "n_samples": 230,
+        "local_loss": 2.5057,
+        "update_hash": "785d7d2b080d63bcf5415074c0e179e9db664525f6b8a66962bb71e7a3745658"
+      }
+    },
+    "previous_hash": "53f6412515d022ab4560ff397c97d4b440057f679f2f6f5ff8f5d41a5a5eded3",
+    "hash": "fc1bc343d9e8a5e365b941ef85a127ef61e9c74b42b3e8e2a612f2350d78ade4",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "fd79d36ac1c72903...",
+    "signature_valid": true
+  },
+  {
+    "index": 65,
+    "timestamp": 1793195433.4127288,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 9,
+        "update_hash": "785d7d2b080d63bcf5415074c0e179e9db664525f6b8a66962bb71e7a3745658",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "fc1bc343d9e8a5e365b941ef85a127ef61e9c74b42b3e8e2a612f2350d78ade4",
+    "hash": "8d4e8eb15c53bc2aaf579d55426118212730a61ecc0019827efb8d981ad0dedf",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "54431640fde6dcb0...",
+    "signature_valid": true
+  },
+  {
+    "index": 66,
+    "timestamp": 1793195433.44451,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 9,
+        "n_samples": 232,
+        "local_loss": 2.5348,
+        "update_hash": "49824db390d8c9137fc4799d29411cdb76b453e59493337dc8d0eefa5ab29208"
+      }
+    },
+    "previous_hash": "8d4e8eb15c53bc2aaf579d55426118212730a61ecc0019827efb8d981ad0dedf",
+    "hash": "fa75bc26566aea76559b95acbb11c7679139a61f5e1e340c03b01eea44456214",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "fd2a285b32bcaaf8...",
+    "signature_valid": true
+  },
+  {
+    "index": 67,
+    "timestamp": 1793195433.44451,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 9,
+        "update_hash": "49824db390d8c9137fc4799d29411cdb76b453e59493337dc8d0eefa5ab29208",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "fa75bc26566aea76559b95acbb11c7679139a61f5e1e340c03b01eea44456214",
+    "hash": "f965ccf74584566fd82a713bff31e54e957fe9b0865d88f46e40e4e883166272",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "7e183d2313ea5164...",
+    "signature_valid": true
+  },
+  {
+    "index": 68,
+    "timestamp": 1793195433.4763095,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 9,
+        "accuracy": 0.7368,
+        "avg_loss": 2.6198,
+        "model_hash": "fb4cb2d01b893304...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "4074836a65c479f5...",
+          "785d7d2b080d63bc...",
+          "49824db390d8c913..."
+        ]
+      }
+    },
+    "previous_hash": "f965ccf74584566fd82a713bff31e54e957fe9b0865d88f46e40e4e883166272",
+    "hash": "927f9b83f85ed7e1ab354485d967d1918e58d28187e4d5963a15d7e3899db56b",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "71e6594c02d0f1c8...",
+    "signature_valid": true
+  },
+  {
+    "index": 69,
+    "timestamp": 1793195434.1933458,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 10,
+        "n_samples": 230,
+        "local_loss": 2.9084,
+        "update_hash": "b761f7e413b6f1f6977a92b2e44cd13d42b274305500c7cbd7cc9e2288970a64"
+      }
+    },
+    "previous_hash": "927f9b83f85ed7e1ab354485d967d1918e58d28187e4d5963a15d7e3899db56b",
+    "hash": "afbbe74207ad0ed5f12d0c5f9886ee120804cee4fa9716170724a27fdb499482",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "84afacce292d6f75...",
+    "signature_valid": true
+  },
+  {
+    "index": 70,
+    "timestamp": 1793195434.1933458,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_A",
+      "details": {
+        "round": 10,
+        "update_hash": "b761f7e413b6f1f6977a92b2e44cd13d42b274305500c7cbd7cc9e2288970a64",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "afbbe74207ad0ed5f12d0c5f9886ee120804cee4fa9716170724a27fdb499482",
+    "hash": "885ff7f6b1ea6b28e778f24dfbd6a63f1ad17c970caeae27fea97becbe95949a",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "1e882f1d8f5b2adb...",
+    "signature_valid": true
+  },
+  {
+    "index": 71,
+    "timestamp": 1793195434.2083397,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 10,
+        "n_samples": 230,
+        "local_loss": 2.5721,
+        "update_hash": "06f92863a136a08d5cf68aae331350c0474f3ff92c5b3a61e733e7417c7e3077"
+      }
+    },
+    "previous_hash": "885ff7f6b1ea6b28e778f24dfbd6a63f1ad17c970caeae27fea97becbe95949a",
+    "hash": "848c2060bcb49a3fa226164547f300159a5a1d033435cc5fd521919d1f6d1e75",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "a901282d780d1403...",
+    "signature_valid": true
+  },
+  {
+    "index": 72,
+    "timestamp": 1793195434.2083397,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_B",
+      "details": {
+        "round": 10,
+        "update_hash": "06f92863a136a08d5cf68aae331350c0474f3ff92c5b3a61e733e7417c7e3077",
+        "n_samples": 230
+      }
+    },
+    "previous_hash": "848c2060bcb49a3fa226164547f300159a5a1d033435cc5fd521919d1f6d1e75",
+    "hash": "477091d7e9d9ec18786f7f37f81e3e4ecb55549abe645ca678a7fc0bb9157e72",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "8293258fcad87eb8...",
+    "signature_valid": true
+  },
+  {
+    "index": 73,
+    "timestamp": 1793195434.2378502,
+    "data": {
+      "event": "fl_round_participation",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 10,
+        "n_samples": 232,
+        "local_loss": 2.3423,
+        "update_hash": "0842b245fd4d6988236cb9ec9cdf2f126440eb42541572d9f415ac609603b99a"
+      }
+    },
+    "previous_hash": "477091d7e9d9ec18786f7f37f81e3e4ecb55549abe645ca678a7fc0bb9157e72",
+    "hash": "89543e95bc93001ae251e3cd0d0d61d597d19cfca49012640681b8cf01bd8bc1",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "2a0c605d8129480a...",
+    "signature_valid": true
+  },
+  {
+    "index": 74,
+    "timestamp": 1793195434.2378502,
+    "data": {
+      "event": "fl_update_hash",
+      "actor": "Hospital_C",
+      "details": {
+        "round": 10,
+        "update_hash": "0842b245fd4d6988236cb9ec9cdf2f126440eb42541572d9f415ac609603b99a",
+        "n_samples": 232
+      }
+    },
+    "previous_hash": "89543e95bc93001ae251e3cd0d0d61d597d19cfca49012640681b8cf01bd8bc1",
+    "hash": "89a0c3ccaf555c365a8f877a3529f22bcb4ab7165330fd6b71147b5259e24442",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "d2c63ecfac11a17e...",
+    "signature_valid": true
+  },
+  {
+    "index": 75,
+    "timestamp": 1793195434.271776,
+    "data": {
+      "event": "fl_round_complete",
+      "actor": "coordinator",
+      "details": {
+        "round": 10,
+        "accuracy": 0.7895,
+        "avg_loss": 2.6076,
+        "model_hash": "37b085e212b1f18f...",
+        "participating_hospitals": [
+          "Hospital_A",
+          "Hospital_B",
+          "Hospital_C"
+        ],
+        "update_hashes": [
+          "b761f7e413b6f1f6...",
+          "06f92863a136a08d...",
+          "0842b245fd4d6988..."
+        ]
+      }
+    },
+    "previous_hash": "89a0c3ccaf555c365a8f877a3529f22bcb4ab7165330fd6b71147b5259e24442",
+    "hash": "d1029581728c83a5dba4e13bd1be209ae894b2ab46f99c27ad707d8486cae0aa",
+    "signer_id": "coordinator",
+    "public_key": "942f6f2e2dc835eb...",
+    "signature": "040be400c399f084...",
+    "signature_valid": true
+  }
+]
