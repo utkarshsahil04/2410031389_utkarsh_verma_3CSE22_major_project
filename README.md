@@ -5,6 +5,7 @@ B.Tech major-project prototype that combines a **permissioned blockchain audit t
 Two UIs are available: a lightweight HTML dashboard (`api.py`) and a full **Streamlit** control panel.
 
 > Design diagrams: [`ARCHITECTURE.md`](ARCHITECTURE.md)  
+> Full file/workflow guide: [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md)  
 > Roadmap status: [`ROADMAP.md`](ROADMAP.md)  
 > Phase-I notes: [`project_understanding.md`](project_understanding.md)
 

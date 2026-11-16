@@ -15,6 +15,9 @@ import argparse
 import json
 import os
 import time
+import sys
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # Windows consoles default to cp1252
 
 from chain import ChainBackend, get_chain
 from data_split import split_for_hospitals

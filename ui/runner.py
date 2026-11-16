@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import os
-import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -14,40 +13,17 @@ SIM_SCRIPT = os.path.join(CODE_DIR, "run_simulation.py")
 EXP_SCRIPT = os.path.join(CODE_DIR, "run_experiments.py")
 
 
-def _read_script_text(path: str) -> str:
-    try:
-        with open(path, encoding="utf-8") as f:
-            return f.read()
-    except OSError:
-        return ""
-
-
 def discover_simulation_flags() -> dict[str, Any]:
-    """
-    Inspect run_simulation.py for optional CLI flags that concurrent roadmap
-    work may add (dataset, non-IID, backend). Always supports --rounds.
-    """
-    text = _read_script_text(SIM_SCRIPT)
-    flags = {
+    """CLI flags run_simulation.py supports (keep in sync with its parse_args)."""
+    return {
         "rounds": True,
-        "dataset": bool(
-            re.search(r"--dataset|dataset\s*=|choices=.*pima|heart", text, re.I)
-        ),
-        "non_iid": bool(
-            re.search(r"--non-?iid|--iid|non_iid|label.?skew", text, re.I)
-        ),
-        "backend": bool(
-            re.search(r"--backend|CHAIN_BACKEND|get_chain\(", text, re.I)
-        ),
+        "dataset": True,
+        "non_iid": True,
+        "backend": True,  # via CHAIN_BACKEND env, not a CLI flag
         "exists": os.path.isfile(SIM_SCRIPT),
+        "dataset_choices": ["pima", "heart", "mimic"],
+        "experiments_exists": os.path.isfile(EXP_SCRIPT),
     }
-    # Dataset choices: prefer explicit mentions, else offer pima only
-    datasets = ["pima"]
-    if re.search(r"heart", text, re.I):
-        datasets.append("heart")
-    flags["dataset_choices"] = datasets
-    flags["experiments_exists"] = os.path.isfile(EXP_SCRIPT)
-    return flags
 
 
 @dataclass
@@ -110,22 +86,13 @@ class SimulationRunner:
 
         if flags["dataset"] and dataset:
             cmd.extend(["--dataset", dataset])
-        if flags["non_iid"] and non_iid is not None:
-            if non_iid:
-                cmd.append("--non-iid")
-            else:
-                # Prefer --iid when present; otherwise omit
-                text = _read_script_text(SIM_SCRIPT)
-                if re.search(r"--iid\b", text):
-                    cmd.append("--iid")
-        if flags["backend"] and backend:
-            text = _read_script_text(SIM_SCRIPT)
-            if re.search(r"--backend", text):
-                cmd.extend(["--backend", backend])
+        if non_iid is not None:
+            cmd.extend(["--split", "noniid" if non_iid else "iid"])
 
         env = os.environ.copy()
         env["CHAIN_BACKEND"] = backend or "inprocess"
         env["PYTHONUNBUFFERED"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
 
         try:
             self.process = subprocess.Popen(
@@ -135,6 +102,8 @@ class SimulationRunner:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 bufsize=1,
             )
             self.kind = "simulation"
@@ -158,6 +127,7 @@ class SimulationRunner:
         cmd = [py, EXP_SCRIPT]
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
         try:
             self.process = subprocess.Popen(
                 cmd,
@@ -166,6 +136,8 @@ class SimulationRunner:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 bufsize=1,
             )
             self.kind = "experiments"

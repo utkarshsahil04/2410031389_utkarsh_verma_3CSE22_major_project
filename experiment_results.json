@@ -23,7 +23,7 @@
     ]
   },
   "rounds": 3,
-  "elapsed_sec": 0.21,
+  "elapsed_sec": 0.23,
   "results": [
     {
       "name": "centralized_sgd",
