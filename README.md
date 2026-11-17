@@ -16,7 +16,7 @@ Two UIs are available: a lightweight HTML dashboard (`api.py`) and a full **Stre
 | Area | What you get |
 |---|---|
 | Federated Learning | 3 hospital nodes, FedAvg, IID / non-IID splits |
-| Blockchain | Ed25519-signed blocks, per-node replicas, update-hash commits |
+| Blockchain | Ed25519 blocks signed by the acting member (fixed allowlist), per-node replicas, update-hash commits, owner-bound consent |
 | Consent | `grant_access` required before cross-hospital record use |
 | Datasets | PIMA (default), UCI Heart, MIMIC-shaped synthetic stub |
 | Experiments | Centralized / local / FedAvg / poison / tamper baselines |
@@ -54,10 +54,12 @@ cd "d:\COllege\3rd Year\major project\code"
 ### Option A — Streamlit UI (recommended)
 
 ```powershell
-streamlit run streamlit_app.py
+python -m streamlit run streamlit_app.py
 ```
 
-Tabs: Overview · Run Simulation · Hospitals · FL Metrics · Blockchain Audit · Experiments
+Tabs: How it works · Run the demo · Live Data Check · Hospitals · Training results · Blockchain audit · Experiments
+
+**Live Data Check:** each hospital's data lives in `hospital_data/<Hospital>.csv`. The tab re-hashes the files every 2 s and compares them with the hash on the (re-verified) blockchain. Edit a file (in the tab, Excel or VS Code) and its card turns red; *Record new version* appends a `data_update` block signed by that hospital; *Train on the current (edited) hospital data* (`--keep-data`) retrains on the edited files.
 
 ### Option B — HTML dashboard + CLI
 
@@ -113,9 +115,9 @@ python self_check.py
 ## How it works
 
 1. **Load + split** — choose dataset; shard across Hospital_A / B / C (IID or non-IID); hold out a test set.
-2. **Register** — each hospital hashes its shard, anchors a **signed** on-chain registration, syncs a local replica.
-3. **Consent** — `grant_access(A→B)` allows B to use A’s record ref; C is denied without a grant.
-4. **Train** — each round: local SGD → commit `SHA-256(update)` → FedAvg → log global model hash → replica sync.
+2. **Register** — each hospital writes its shard to `hospital_data/`, hashes it, anchors a registration **signed with its own key**, syncs a local replica.
+3. **Consent** — only the owner of a record can grant access: `grant_access(A→B)` (signed by A) allows B to use A’s record ref; C is denied without a grant.
+4. **Train** — hospitals share only feature statistics (n, mean, variance) to agree a global scaler; each round: local SGD → commit `SHA-256(update)` → server re-checks each update against its committed hash → FedAvg → log global model hash → replica sync.
 5. **Visualize** — HTML dashboard and/or Streamlit poll `fl_state.json` / `chain_state.json`.
 
 ```
@@ -132,7 +134,7 @@ Hospitals (private shards) ──weights only──► FedAvg Server ──metri
 | Name | Flag | Source | Notes |
 |---|---|---|---|
 | PIMA Indians Diabetes | `--dataset pima` | Public auto-download → `data/diabetes.csv` | Default smoke test (768 rows) |
-| UCI Heart Disease | `--dataset heart` | Public multi-center UCI tables | Better multi-hospital demo |
+| UCI Heart Disease | `--dataset heart` | 920 rows from 4 centres (Cleveland, Hungary, Switzerland, VA); `Ca`/`Thal` dropped (>40% missing), rest median-imputed | Better multi-hospital demo |
 | MIMIC-shaped | `--dataset mimic` | **Synthetic stub only** | Real MIMIC needs PhysioNet credentials — see `code/data/mimic/README_MIMIC_ACCESS.txt` |
 
 ---
