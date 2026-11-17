@@ -23,98 +23,138 @@
     ]
   },
   "rounds": 3,
-  "elapsed_sec": 0.23,
+  "elapsed_sec": 0.4,
   "results": [
     {
       "name": "centralized_sgd",
-      "accuracy": 0.6842105263157895,
-      "auc": 0.8148148148148148,
+      "accuracy": 0.7236842105263158,
+      "auc": 0.7906273620559334,
       "n_train": 692,
       "n_test": 76
     },
     {
       "name": "local_only",
-      "accuracy": 0.706140350877193,
-      "auc": 0.7548500881834216,
+      "accuracy": 0.6929824561403509,
+      "auc": 0.7294028722600151,
       "per_hospital_accuracy": [
-        0.6447,
-        0.7763,
+        0.6579,
+        0.7237,
         0.6974
       ]
     },
     {
       "name": "fedavg",
-      "accuracy": 0.75,
-      "auc": null,
-      "history": [
-        {
-          "round": 1,
-          "accuracy": 0.7368,
-          "avg_loss": 2.6034
-        },
-        {
-          "round": 2,
-          "accuracy": 0.7237,
-          "avg_loss": 2.6406
-        },
-        {
-          "round": 3,
-          "accuracy": 0.75,
-          "avg_loss": 2.3702
-        }
-      ],
-      "final_model_hash": "436e832d8b26c68b...",
-      "poison": null
-    },
-    {
-      "name": "fedavg_label_flip",
       "accuracy": 0.7105,
-      "auc": null,
+      "auc": 0.7634164777021919,
       "history": [
         {
           "round": 1,
-          "accuracy": 0.6974,
-          "avg_loss": 2.6034
+          "accuracy": 0.7632,
+          "avg_loss": 2.5167
         },
         {
           "round": 2,
-          "accuracy": 0.6053,
-          "avg_loss": 2.4569
+          "accuracy": 0.6842,
+          "avg_loss": 2.2303
         },
         {
           "round": 3,
           "accuracy": 0.7105,
-          "avg_loss": 2.7172
+          "avg_loss": 2.493
         }
       ],
-      "final_model_hash": "be0caf263e04edce...",
-      "poison": "label_flip",
-      "accuracy_drop_vs_fedavg": 0.0395
+      "final_model_hash": "c49a2cfd47e46d11...",
+      "poison": null
     },
     {
-      "name": "fedavg_weight_poison",
-      "accuracy": 0.3158,
-      "auc": null,
+      "name": "fedavg_label_flip",
+      "accuracy": 0.6053,
+      "auc": 0.6492819349962208,
       "history": [
         {
           "round": 1,
-          "accuracy": 0.3158,
-          "avg_loss": 2.6034
+          "accuracy": 0.6316,
+          "avg_loss": 2.5167
         },
         {
           "round": 2,
-          "accuracy": 0.3026,
-          "avg_loss": 2.473
+          "accuracy": 0.6974,
+          "avg_loss": 2.3509
         },
         {
           "round": 3,
-          "accuracy": 0.3158,
-          "avg_loss": 2.5313
+          "accuracy": 0.6053,
+          "avg_loss": 2.6082
         }
       ],
-      "final_model_hash": "2fd4bd200655d7bc...",
+      "final_model_hash": "7a9423dd0f4a4b19...",
+      "poison": "label_flip",
+      "accuracy_drop_vs_fedavg": 0.1052
+    },
+    {
+      "name": "fedavg_weight_poison",
+      "accuracy": 0.2632,
+      "auc": 0.3299319727891156,
+      "history": [
+        {
+          "round": 1,
+          "accuracy": 0.3421,
+          "avg_loss": 2.5167
+        },
+        {
+          "round": 2,
+          "accuracy": 0.25,
+          "avg_loss": 2.3994
+        },
+        {
+          "round": 3,
+          "accuracy": 0.2632,
+          "avg_loss": 2.6163
+        }
+      ],
+      "final_model_hash": "988eb3b25a276e5a...",
       "poison": "weight_poison",
-      "accuracy_drop_vs_fedavg": 0.4342
+      "accuracy_drop_vs_fedavg": 0.4473
+    },
+    {
+      "name": "fedavg_transit_tamper",
+      "accuracy": 0.6974,
+      "auc": 0.7777777777777778,
+      "history": [
+        {
+          "round": 1,
+          "accuracy": 0.75,
+          "avg_loss": 2.5023
+        },
+        {
+          "round": 2,
+          "accuracy": 0.6711,
+          "avg_loss": 2.415
+        },
+        {
+          "round": 3,
+          "accuracy": 0.6974,
+          "avg_loss": 2.3926
+        }
+      ],
+      "final_model_hash": "aa4c7b0274c0ffcc...",
+      "poison": "transit_tamper",
+      "tamper_detected": true,
+      "updates_rejected": [
+        {
+          "hospital": "Hospital_C",
+          "round": 1
+        },
+        {
+          "hospital": "Hospital_C",
+          "round": 2
+        },
+        {
+          "hospital": "Hospital_C",
+          "round": 3
+        }
+      ],
+      "accuracy_drop_vs_fedavg": 0.0131
     },
     {
       "name": "chain_tamper",
