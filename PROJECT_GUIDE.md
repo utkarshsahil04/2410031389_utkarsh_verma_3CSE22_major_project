@@ -61,7 +61,7 @@ Typical demo: start `api.py` **or** Streamlit, then run the simulation (Streamli
 | **`run_simulation.py`** | Main workflow: load dataset → split → create hospitals → register → consent → FL rounds → write `fl_state.json` / `chain_state.json` |
 | **`run_experiments.py`** | Compare centralized vs local vs FedAvg; label-flip / weight-poison; tamper the chain and prove `verify_chain()` fails |
 | **`api.py`** | Tiny HTTP server: `/` dashboard, `/state` → FL JSON, `/chain` → blockchain JSON |
-| **`streamlit_app.py`** | Main UI (tabs: How it works, Run the demo, Live Data Check, Hospitals, Training results, Blockchain audit, Experiments) |
+| **`streamlit_app.py`** | Main UI (tabs: How it works, Run the demo, Live Data Check, Consent, Hospitals, Training results, Blockchain audit, Experiments) |
 | **`integrity.py`** | Live dataset integrity: re-hash `hospital_data/*.csv`, compare with the on-chain hash, list changed cells, record a signed `data_update`, undo |
 | **`self_check.py`** | Unit-style checks without a test framework |
 
@@ -157,6 +157,9 @@ Raw CSV rows never leave the hospital node.
 4. C tries the same without a grant → **`ConsentError`**  
 
 `has_access` re-verifies the chain first, so editing a grant block revokes access instead of leaving a stale permission.
+The owner can also withdraw consent with a signed `revoke_access` block; the owner's latest grant or revoke wins.
+
+**Try it in the Consent tab:** the grid shows who can use whose data right now; *Grant access* / *Revoke access* add blocks signed by the owner; *Ask for the data* logs the request as an `access_request` block signed by the requester, allowed or refused. Consent covers the currently registered version of the data, so recording a new version needs a new grant.
 So the chain is not storing medical files; it stores **who was allowed to reference what**, plus FL audit.
 
 ---
