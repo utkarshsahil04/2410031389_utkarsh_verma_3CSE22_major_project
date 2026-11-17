@@ -224,6 +224,89 @@ def check_integrity():
     print("  [OK] integrity  -- scan / edit / CRLF / new version / undo / missing / running / old chain")
 
 
+
+def check_consent_ops():
+    """Consent tab operations on the stored ledger: grant, revoke, request, matrix."""
+    import json
+    import shutil
+    import tempfile
+
+    import integrity
+
+    saved = (integrity.DATA_DIR, integrity.CHAIN_PATH, integrity.FL_STATE_PATH)
+    tmp = tempfile.mkdtemp()
+    try:
+        integrity.DATA_DIR = os.path.join(tmp, "hospital_data")
+        integrity.CHAIN_PATH = os.path.join(tmp, "chain_state.json")
+        integrity.FL_STATE_PATH = os.path.join(tmp, "fl_state.json")
+        hs = integrity.HOSPITALS
+        A, B, C = hs
+        df, _ = load_dataset("pima")
+        shards = {h: df.iloc[i * 40:(i + 1) * 40].reset_index(drop=True) for i, h in enumerate(hs)}
+        integrity.write_hospital_files(shards, "pima", "iid")
+        chain = InProcessChain()
+        for h in hs:
+            HospitalNode(h, shards[h], chain).register_data()
+        integrity._write_json(integrity.CHAIN_PATH, chain.to_dict())
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "complete"})
+
+        def access(req, owner):
+            return integrity.consent_matrix()["access"][req][owner]
+
+        def ledger():
+            c = InProcessChain.from_blocks(json.load(open(integrity.CHAIN_PATH)))
+            assert c.verify_chain()
+            return c
+
+        assert not access(C, A) and not access(B, A)
+        blk = integrity.grant_consent(A, C)  # owner grants -> signed by the owner
+        assert blk["signer_id"] == A and blk["data"]["event"] == "grant_access" and access(C, A)
+        assert not access(B, A), "a grant to C must not open access for B"
+
+        r = integrity.request_access(C, A)  # every request is logged, signed by the requester
+        assert r["allowed"] is True
+        last = ledger().chain[-1]
+        assert last.data["event"] == "access_request" and last.signer_id == C
+        assert last.data["details"]["allowed"] is True and last.data["details"]["owner"] == A
+        r = integrity.request_access(B, A)
+        assert r["allowed"] is False and "no consent" in r["reason"]
+        assert ledger().chain[-1].data["details"]["allowed"] is False
+
+        integrity.revoke_consent(A, C)  # revoke ends access
+        assert not access(C, A) and ledger().chain[-1].data["event"] == "revoke_access"
+        for bad in (lambda: integrity.revoke_consent(A, C),   # nothing left to revoke
+                    lambda: integrity.grant_consent(A, A),    # own data
+                    lambda: integrity.grant_consent("Hospital_X", A)):
+            try:
+                bad()
+                raise AssertionError("must be refused")
+            except RuntimeError:
+                pass
+        integrity.grant_consent(A, C)  # grant again after a revoke
+        assert access(C, A)
+
+        # consent is for a specific version: a new recorded version needs a new grant
+        edited = integrity.load_shard(A)
+        edited.iloc[0, 1] += 1
+        integrity.save_shard(A, edited)
+        integrity.record_new_version(A)
+        assert not access(C, A)
+
+        # refused while a simulation is running; ledger untouched
+        before = open(integrity.CHAIN_PATH).read()
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "training"})
+        try:
+            integrity.grant_consent(B, C)
+            raise AssertionError("must refuse while training")
+        except RuntimeError as exc:
+            assert "simulation is running" in str(exc)
+        assert open(integrity.CHAIN_PATH).read() == before
+    finally:
+        integrity.DATA_DIR, integrity.CHAIN_PATH, integrity.FL_STATE_PATH = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    print("  [OK] consent ops -- grant / request log / revoke / owner-only / per-version / running")
+
+
 def check_replicas():
     auth = InProcessChain(seed="replica-test")
     auth.add_record("Hospital_A", "r1", {})
@@ -476,4 +559,5 @@ if __name__ == "__main__":
     check_federated_scaler()
     check_poison_traceability()
     check_heart_centres()
+    check_consent_ops()
     print("\nALL CHECKS PASSED")
