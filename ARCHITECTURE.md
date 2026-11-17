@@ -173,7 +173,7 @@ Stable API (`ChainBackend`) so FL code never imports a concrete ledger:
 |---|---|
 | `add_record(hospital, hash, metadata)` | Register dataset fingerprint |
 | `grant_access(from, to, record_ref)` | Consent / access grant |
-| `has_access(requester, record_ref)` | True only if the verified chain holds a grant signed by the record's owner (gates `use_record_ref`; local training uses only the hospital's own data) |
+| `has_access(requester, record_ref)` | True only if, on the verified chain, the owner's latest signed `grant_access` / `revoke_access` for that requester is a grant (gates `use_record_ref`; local training uses only the hospital's own data) |
 | `log_event(type, actor, details)` | FL / session / update-hash audit |
 | `verify_chain()` | Fixed genesis, index = position, hash links, recomputed hashes, Ed25519 signature, signer key must match the member allowlist |
 | `to_dict()` | Serialize for `chain_state.json` |
