@@ -45,11 +45,6 @@ class HospitalNode:
         self.replica = ChainReplica(hospital_id, keys=self.keys)
         self.record_hash: str | None = None
 
-        # Register this node's public key on the in-process / mock ledger
-        ledger = self._authority_ledger()
-        if ledger is not None:
-            ledger.register_node_key(self.hospital_id, self.keys.public_bytes_hex())
-
     def _authority_ledger(self) -> InProcessChain | None:
         if isinstance(self.chain, InProcessChain):
             return self.chain
@@ -69,6 +64,7 @@ class HospitalNode:
                 "description": "EHR dataset shard — off-chain; only hash stored here",
                 "signer": self.hospital_id,
             },
+            signer=self.keys,
         )
         self.sync_replica()
         return block, record_hash
@@ -109,6 +105,7 @@ class HospitalNode:
                 "local_loss": round(loss, 4),
                 "update_hash": update_hash,
             },
+            signer=self.keys,
         )
         # Explicit update-hash commit (Step 2) — not only global model hash
         self.chain.log_event(
@@ -119,6 +116,7 @@ class HospitalNode:
                 "update_hash": update_hash,
                 "n_samples": n_samples,
             },
+            signer=self.keys,
         )
         self.sync_replica()
         return local_weights, n_samples, loss, update_hash
