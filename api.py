@@ -7,7 +7,10 @@ Usage: python api.py
        Open http://localhost:5000
 """
 import http.server
+import json
 import os
+
+import integrity
 
 BASE = os.path.dirname(__file__)
 DASHBOARD_DIR = os.path.join(BASE, "dashboard")
@@ -26,7 +29,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _ok(self, data: bytes, mime: str):
         self.send_response(200)
         self.send_header("Content-Type", mime)
-        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -43,24 +45,33 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
             return
 
-        # Serve dashboard static files
-        if path == "/" or path == "/index.html":
-            filepath = os.path.join(DASHBOARD_DIR, "index.html")
-        else:
-            filepath = os.path.join(DASHBOARD_DIR, path.lstrip("/"))
+        if path == "/integrity":
+            try:  # no local file paths in the response
+                rows = [{k: v for k, v in r.items() if k != "path"} for r in integrity.scan()]
+                self._ok(json.dumps(rows).encode(), "application/json")
+            except Exception:
+                self.send_response(500)
+                self.end_headers()
+            return
 
-        ext = os.path.splitext(filepath)[1]
-        mime = MIME.get(ext, "text/plain")
+        # Serve dashboard static files — only files that really live inside dashboard/
+        name = "index.html" if path in ("/", "/index.html") else path.lstrip("/")
+        filepath = os.path.realpath(os.path.join(DASHBOARD_DIR, name))
+        if os.path.dirname(filepath) != os.path.realpath(DASHBOARD_DIR):
+            self.send_response(404)
+            self.end_headers()
+            return
+        mime = MIME.get(os.path.splitext(filepath)[1], "text/plain")
         try:
             with open(filepath, "rb") as f:
                 self._ok(f.read(), mime)
-        except FileNotFoundError:
+        except OSError:
             self.send_response(404)
             self.end_headers()
 
 
 if __name__ == "__main__":
-    server = http.server.HTTPServer(("", PORT), Handler)
+    server = http.server.HTTPServer(("127.0.0.1", PORT), Handler)  # local demo only
     print(f"Dashboard -> http://localhost:{PORT}")
     print("    Run  python run_simulation.py  in a separate terminal to start the simulation.")
     print("    Press Ctrl+C to stop.\n")
