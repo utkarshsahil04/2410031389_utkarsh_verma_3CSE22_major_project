@@ -4,6 +4,7 @@ Fails loud -- no test framework, just asserts + a final print.
 One runnable check that breaks if the logic breaks.
 """
 import os
+import time
 import sys
 
 import numpy as np
@@ -51,6 +52,178 @@ def check_blockchain():
     print("  [OK] blockchain -- genesis / signatures / consent / tamper / fabric-mock")
 
 
+def check_chain_reload():
+    c = InProcessChain(seed="reload")
+    c.add_record("Hospital_A", "h1", {})
+    c.grant_access("Hospital_A", "Hospital_B", "h1")
+    c.log_event("ping", "coordinator", {})
+    c2 = InProcessChain.from_blocks(c.to_dict())
+    assert c2.verify_chain() and len(c2) == len(c)
+    assert c2.has_access("Hospital_B", "h1") and not c2.has_access("Hospital_C", "h1")
+    c2.chain[1].data["record_hash"] = "x"
+    assert not c2.verify_chain(), "tampered reloaded chain must fail"
+    print("  [OK] reload     -- chain_state round-trip / verify / tamper")
+
+
+def check_integrity():
+    import json
+    import shutil
+    import tempfile
+
+    import integrity
+
+    saved = (integrity.DATA_DIR, integrity.CHAIN_PATH, integrity.FL_STATE_PATH)
+    tmp = tempfile.mkdtemp()
+    try:
+        integrity.DATA_DIR = os.path.join(tmp, "hospital_data")
+        integrity.CHAIN_PATH = os.path.join(tmp, "chain_state.json")
+        integrity.FL_STATE_PATH = os.path.join(tmp, "fl_state.json")
+        hs = integrity.HOSPITALS
+        df, _ = load_dataset("pima")
+        shards = {h: df.iloc[i * 50:(i + 1) * 50].reset_index(drop=True) for i, h in enumerate(hs)}
+        hashes = integrity.write_hospital_files(shards, "pima", "iid")
+        assert integrity.read_meta() == {"dataset": "pima", "split": "iid"}
+
+        # register like run_simulation does, then write the ledger
+        chain = InProcessChain()
+        for h in hs:
+            node = HospitalNode(h, shards[h], chain)
+            _, rec = node.register_data()
+            assert rec == hashes[h], "file hash must equal registered hash"
+        integrity._write_json(integrity.CHAIN_PATH, chain.to_dict())
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "complete", "chain_length": len(chain), "chain_valid": True})
+
+        def status(h):
+            return next(r for r in integrity.scan() if r["hospital"] == h)
+
+        assert [r["status"] for r in integrity.scan()] == ["match"] * 3
+        A = "Hospital_A"
+        # saving the editor with no edits keeps the hash
+        assert integrity.save_shard(A, integrity.load_shard(A)) == hashes[A]
+        assert status(A)["status"] == "match"
+
+        # edit one cell
+        edited = integrity.load_shard(A)
+        old_val = edited.iloc[3, 1]
+        edited.iloc[3, 1] = old_val + 7
+        integrity.save_shard(A, edited)
+        r = status(A)
+        assert r["status"] == "changed" and r["live_hash"] != r["chain_hash"] and r["values_identical"] is False
+        cc = integrity.changed_cells(A)
+        assert cc["modified"] == [{"row": 3, "column": edited.columns[1], "old": str(old_val), "new": str(old_val + 7)}], cc
+        assert not cc["values_identical"] and cc["rows_added"] == 0 and cc["rows_removed"] == 0
+
+        # undo, then re-save with Windows line endings (Excel-style): bytes differ, values do not
+        integrity.restore_original(A)
+        assert status(A)["status"] == "match"
+        with open(integrity._path(A), "rb") as f:
+            raw = f.read()
+        with open(integrity._path(A), "wb") as f:
+            f.write(raw.replace(b"\n", b"\r\n"))
+        r = status(A)
+        assert r["status"] == "changed" and r["values_identical"] is True
+        assert integrity.changed_cells(A)["modified"] == []
+        integrity.restore_original(A)
+
+        # record a new version: signed by the hospital, chain still verifies after reload
+        integrity.save_shard(A, edited)
+        blk = integrity.record_new_version(A)
+        assert status(A)["status"] == "match"
+        c2 = InProcessChain.from_blocks(json.load(open(integrity.CHAIN_PATH)))
+        assert c2.verify_chain() and len(c2) == len(chain) + 1
+        last = c2.chain[-1]
+        assert last.signer_id == A and last.data["event"] == "data_update"
+        assert last.data["previous_record_hash"] == hashes[A] and blk["index"] == last.index
+        assert last.public_key == KP.generate(A, seed="demo-seed").public_bytes_hex()
+        assert json.load(open(integrity.FL_STATE_PATH))["chain_length"] == len(c2)
+        assert integrity.chain_record(A)["event"] == "data_update"
+
+        # restore_original returns the snapshot (now the recorded version)
+        integrity.save_shard(A, shards[A])
+        assert status(A)["status"] == "changed"
+        assert integrity.restore_original(A) == status(A)["chain_hash"]
+
+        # missing / unreadable never raise
+        B = "Hospital_B"
+        os.remove(integrity._path(B))
+        assert status(B)["status"] == "missing"
+        with open(integrity._path(B), "wb") as f:
+            f.write(b"\xff\xfe\x00garbage\x80")
+        assert status(B)["status"] == "unreadable"
+        try:
+            integrity.record_new_version(B)
+            raise AssertionError("unreadable file must not be recorded")
+        except RuntimeError:
+            pass
+        integrity.restore_original(B)
+
+        # refuse while a simulation is running; ledger untouched
+        before = open(integrity.CHAIN_PATH).read()
+        integrity.save_shard(A, shards[A])
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "training"})
+        try:
+            integrity.record_new_version(A)
+            raise AssertionError("must refuse while training")
+        except RuntimeError as exc:
+            assert "simulation is running" in str(exc)
+        assert open(integrity.CHAIN_PATH).read() == before
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "complete"})
+
+        # a stale "training" status (crashed run, file untouched for >60 s) does not block recording
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "training"})
+        old_t = time.time() - 120
+        os.utime(integrity.FL_STATE_PATH, (old_t, old_t))
+        integrity.record_new_version(A)
+        assert status(A)["status"] == "match"
+        integrity._write_json(integrity.FL_STATE_PATH, {"status": "complete"})
+        # recording an unchanged file is refused (no duplicate blocks)
+        try:
+            integrity.record_new_version(A)
+            raise AssertionError("no-op record must be refused")
+        except RuntimeError as exc:
+            assert "nothing new" in str(exc)
+
+        # a forged (unsigned) record block appended to chain_state.json is never trusted
+        good = json.load(open(integrity.CHAIN_PATH))
+        forged_file = shards[A].copy()
+        forged_file.iloc[0, 1] += 99
+        forged_hash = integrity.save_shard(A, forged_file)
+        fake = dict(good[-1], index=len(good), previous_hash=good[-1]["hash"], hash="f" * 64,
+                    data={"event": "data_update", "hospital": A, "record_hash": forged_hash})
+        integrity._write_json(integrity.CHAIN_PATH, good + [fake])
+        assert [r["status"] for r in integrity.scan()] == ["chain_invalid"] * 3
+        integrity._write_json(integrity.CHAIN_PATH, good)
+        integrity.restore_original(A)
+
+        # added columns are reported, not silently "same values"
+        wide = integrity.load_shard(A)
+        wide["Extra"] = 1
+        integrity.save_shard(A, wide)
+        assert integrity.changed_cells(A)["columns_added"] == ["Extra"]
+        integrity.restore_original(A)
+        # undo without a registered copy is a readable error
+        os.remove(integrity._snap(B))
+        try:
+            integrity.restore_original(B)
+            raise AssertionError("restore without snapshot must raise RuntimeError")
+        except RuntimeError:
+            pass
+
+        # old-format chain (truncated keys only) cannot be extended
+        old = [{k: v for k, v in b.items() if not k.endswith("_full")} for b in json.load(open(integrity.CHAIN_PATH))]
+        integrity._write_json(integrity.CHAIN_PATH, old)
+        try:
+            integrity.record_new_version(A)
+            raise AssertionError("must refuse chain without full keys")
+        except RuntimeError as exc:
+            assert "Run the simulation again" in str(exc)
+        assert json.load(open(integrity.CHAIN_PATH)) == old
+    finally:
+        integrity.DATA_DIR, integrity.CHAIN_PATH, integrity.FL_STATE_PATH = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    print("  [OK] integrity  -- scan / edit / CRLF / new version / undo / missing / running / old chain")
+
+
 def check_replicas():
     auth = InProcessChain(seed="replica-test")
     auth.add_record("Hospital_A", "r1", {})
@@ -69,6 +242,90 @@ def check_replicas():
     # leave unsigned
     assert not rep.try_accept_block(bad), "unsigned peer block must be rejected"
     print("  [OK] replicas   -- sync / reject unsigned peer block")
+
+
+def check_chain_security():
+    from chain.inprocess import Block
+
+    def key(n):
+        return KP.generate(n, seed="demo-seed")
+
+    A, B = key("Hospital_A"), key("Hospital_B")
+
+    def fresh():
+        c = InProcessChain()
+        c.add_record("Hospital_A", "hA", {}, signer=A)
+        c.log_event("ping", "coordinator", {})
+        c.log_event("pong", "coordinator", {})
+        assert c.verify_chain()
+        return c
+
+    # 1. rewrite history and re-sign everything with a non-member key
+    c = fresh()
+    evil = KP.generate("coordinator", seed="attacker")
+    c.chain[1].data["record_hash"] = "forged"
+    for i in range(1, len(c.chain)):
+        blk = c.chain[i]
+        blk.previous_hash = c.chain[i - 1].hash
+        blk.sign_with(evil)
+    assert not c.verify_chain(), "re-signed chain with non-member key must fail"
+
+    # 2. relabel last block's signer_id and recompute hash
+    c = fresh()
+    c.chain[-1].signer_id = "Hospital_B"
+    c.chain[-1].hash = c.chain[-1]._compute_hash()
+    assert not c.verify_chain(), "signer relabel must fail"
+
+    # 3. genesis tamper (with hash recomputed and relinked)
+    c = fresh()
+    c.chain[0].data["description"] = "evil"
+    c.chain[0].hash = c.chain[0]._compute_hash()
+    c.chain[1].previous_hash = c.chain[0].hash
+    assert not c.verify_chain(), "genesis tamper must fail"
+
+    # 4. index swapped
+    c = fresh()
+    c.chain[1], c.chain[2] = c.chain[2], c.chain[1]
+    assert not c.verify_chain(), "swapped blocks must fail"
+
+    # 5. replica / peer rejects unknown-key block; malformed grant never raises
+    auth = fresh()
+    rep = ChainReplica("Hospital_A", keys=A)
+    assert rep.sync_from(auth)["last_sync_ok"]
+    h = rep.local.chain[-1].hash
+    forged = Block(len(rep.local), {"event": "grant_access", "from": "Hospital_A", "to": "Hospital_C", "record_hash": "hA"}, h)
+    forged.sign_with(evil)
+    assert not rep.try_accept_block(forged), "unknown signer must be rejected"
+    nokey = Block(len(rep.local), {"event": "grant_access", "from": "Hospital_A", "record_hash": "hA"}, h)
+    nokey.sign_with(A)
+    assert rep.try_accept_block(nokey) in (True, False)  # must not raise
+
+    # 6. consent is bound to the record owner
+    c = InProcessChain()
+    c.add_record("Hospital_A", "hA", {}, signer=A)
+    try:
+        c.grant_access("Hospital_B", "Hospital_C", "hA", signer=B)
+        raise AssertionError("non-owner grant must raise")
+    except (PermissionError, ValueError):
+        pass
+    try:
+        c.grant_access("Hospital_A", "Hospital_C", "hA", signer=B)  # B cannot sign for A
+        raise AssertionError("grant signed by someone else must raise")
+    except (PermissionError, ValueError):
+        pass
+    assert not c.has_access("Hospital_C", "hA")
+    c.grant_access("Hospital_A", "Hospital_B", "hA", signer=A)
+    assert c.has_access("Hospital_B", "hA") and not c.has_access("Hospital_C", "hA")
+    # forged grant block appended directly (B pretends A's record is its own to share)
+    fb = Block(len(c.chain), {"event": "grant_access", "from": "Hospital_B", "to": "Hospital_C", "record_hash": "hA"}, c.chain[-1].hash)
+    fb.sign_with(B)
+    c.chain.append(fb)
+    assert not c.has_access("Hospital_C", "hA"), "grant by non-owner must not count"
+    c.chain.pop()
+    # tamper the grant block -> access disappears
+    c.chain[-1].data["to"] = "Hospital_C"
+    assert not c.has_access("Hospital_B", "hA") and not c.has_access("Hospital_C", "hA")
+    print("  [OK] security   -- membership / re-sign / relabel / genesis / index / replica / owner-bound consent")
 
 
 def check_fedavg():
@@ -105,6 +362,7 @@ def check_consent_and_split():
         raise AssertionError("consent gate should deny without grant")
     except ConsentError:
         pass
+    chain.add_record("Hospital_A", ref, {})  # only the registered owner can grant
     chain.grant_access("Hospital_A", "Hospital_B", ref)
     assert node_b.use_record_ref(ref) is True
     print("  [OK] consent    -- grant gate + iid/noniid splits")
@@ -123,7 +381,12 @@ def check_data():
     mdf, mmeta = load_dataset("mimic")
     assert mmeta.get("is_synthetic"), "mimic loader should use synthetic stub"
     assert len(mdf) >= 50
-    print(f"  [OK] dataset    -- pima {len(df)} rows; mimic synthetic {len(mdf)} rows")
+    # a near-empty positive class makes "predict nobody dies" score 100% — meaningless accuracy
+    pos_rate = mdf["Outcome"].mean()
+    assert 0.08 <= pos_rate <= 0.30, f"mimic positive rate {pos_rate:.3f} is unrealistic"
+    _, mtest, _ = split_for_hospitals(mdf, ["A", "B", "C"], mode="iid")
+    assert mtest["Outcome"].sum() >= 3, "mimic test set needs positive cases to measure anything"
+    print(f"  [OK] dataset    -- pima {len(df)} rows; mimic synthetic {len(mdf)} rows ({pos_rate:.0%} positive)")
 
 
 def check_crypto():
@@ -137,12 +400,80 @@ def check_crypto():
     print("  [OK] crypto     -- ed25519 sign / verify / deterministic seed")
 
 
+def check_federated_scaler():
+    from fl_client import HospitalClient
+    from fl_server import FedAvgServer, combine_stats
+
+    rng = np.random.default_rng(0)
+    shards = [
+        pd.DataFrame(np.c_[rng.normal(m, sd, (n, 3)), rng.integers(0, 2, n)])
+        for m, sd, n in [(0, 1, 50), (5, 3, 80), (-2, 0.5, 30)]
+    ]
+    clients = [HospitalClient(f"H{i}", sh) for i, sh in enumerate(shards)]
+    mean, std = combine_stats([c.local_feature_stats() for c in clients])
+    allX = np.vstack([sh.iloc[:, :-1].values for sh in shards])
+    assert np.allclose(mean, allX.mean(axis=0)), "pooled mean must equal mean of concatenated data"
+    assert np.allclose(std, allX.std(axis=0)), "pooled std must equal std of concatenated data"
+
+    # Server evaluation transforms the test set with the GLOBAL scaler (nothing fit on test)
+    test = pd.DataFrame(np.c_[rng.normal(100, 7, (20, 3)), rng.integers(0, 2, 20)])
+    srv = FedAvgServer(test, mean, std)
+    assert np.allclose(srv.X_test, (test.iloc[:, :-1].values - mean) / std)
+    assert abs(srv.X_test.mean()) > 1, "test set must not be re-standardised on itself"
+    for c in clients:
+        c.set_scaler(mean, std)
+    assert np.allclose(np.vstack([c.X for c in clients]), (allX - mean) / std)
+    print("  [OK] fed scaler -- pooled mean/std == concatenated; server eval uses global scaler")
+
+
+def check_poison_traceability():
+    import run_experiments as rx
+
+    df, _ = load_dataset("pima")
+    shards, test_df, _ = split_for_hospitals(df, rx.HOSPITAL_NAMES, mode="iid")
+
+    # weight_poison: hash on chain == hash of the (poisoned) update that was aggregated
+    audit = {}
+    rx.run_fedavg(shards, test_df, 2, poison="weight_poison", audit=audit)
+    chain_hashes = {
+        (b.data["actor"], b.data["details"]["round"]): b.data["details"]["update_hash"]
+        for b in audit["chain"].chain
+        if b.data.get("event") == "fl_update_hash"
+    }
+    assert audit["aggregated"], "no updates aggregated"
+    for a in audit["aggregated"]:
+        assert chain_hashes[(a["hospital"], a["round"])] == a["hash"], "on-chain hash != aggregated update"
+
+    # transit_tamper: altered after commit -> server detects and rejects it
+    clean = rx.run_fedavg(shards, test_df, 2)
+    t = rx.run_fedavg(shards, test_df, 2, poison="transit_tamper")
+    assert t["tamper_detected"] and len(t["updates_rejected"]) == 2
+    assert all(r["hospital"] == "Hospital_C" for r in t["updates_rejected"])
+    assert t["accuracy"] > 0.5 and clean["auc"] is not None
+    print("  [OK] poison     -- poisoned update hash == chain hash; transit tamper rejected")
+
+
+def check_heart_centres():
+    df, meta = load_dataset("heart")
+    counts = pd.read_csv(meta["path"])["center"].value_counts()
+    assert set(counts.index) == {"cleveland", "hungarian", "switzerland", "va"}, counts
+    assert (counts > 100).all(), f"every centre must keep most of its rows: {counts.to_dict()}"
+    assert not df.isna().any().any()
+    print(f"  [OK] heart      -- all 4 centres present {counts.to_dict()}")
+
+
 if __name__ == "__main__":
     print("Running self-check...\n")
     check_crypto()
     check_blockchain()
+    check_chain_reload()
     check_replicas()
+    check_integrity()
+    check_chain_security()
     check_fedavg()
     check_consent_and_split()
     check_data()
+    check_federated_scaler()
+    check_poison_traceability()
+    check_heart_centres()
     print("\nALL CHECKS PASSED")
