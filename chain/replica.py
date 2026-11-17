@@ -27,16 +27,10 @@ class ChainReplica:
         Pull blocks from the shared authority chain into the local replica.
         Returns a sync-status dict for the dashboard / fl_state.json.
         """
-        # Register known keys from authority
-        for nid, pk in authority._known_keys.items():
-            self.local.register_node_key(nid, pk)
-
         # Rebuild local chain from authority export (simplest correct sync)
         exported = authority.export_blocks()
         rebuilt = InProcessChain(signer=self.keys)
-        rebuilt.chain = []
-        rebuilt._access_grants = set()
-        rebuilt._known_keys = dict(authority._known_keys)
+        rebuilt.chain = []  # membership comes from the fixed allowlist, not the authority
 
         for i, raw in enumerate(exported):
             blk = Block(
@@ -58,7 +52,7 @@ class ChainReplica:
                     return self.status()
 
             if i == 0:
-                rebuilt.chain = [blk]
+                rebuilt.chain = [blk]  # genesis is re-checked by verify_chain below
                 continue
 
             if not rebuilt.accept_peer_block(blk):
