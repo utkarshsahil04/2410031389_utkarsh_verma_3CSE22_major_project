@@ -1,6 +1,7 @@
 """
-Live dataset integrity: compare each hospital's local CSV with the hash
-anchored on the blockchain, and anchor edits as signed data_update blocks.
+Live operations on the stored ledger: compare each hospital's local CSV with the hash
+anchored on the blockchain, anchor edits as signed data_update blocks, and grant /
+revoke / request consent.
 
 ponytail: plain files + the existing chain_state.json ledger; no watcher thread,
           callers just poll scan(). Upgrade path: inotify/watchdog + real Fabric.
@@ -194,17 +195,39 @@ def _simulation_running(fl: dict) -> bool:
         return False
 
 
-def record_new_version(h: str) -> dict:
-    if h not in HOSPITALS:
-        raise RuntimeError(f"Unknown hospital {h!r}.")
+def _open_ledger(action: str) -> tuple[dict, list, InProcessChain]:
+    """Reload chain_state.json for writing; refuses (RuntimeError) unless it is safe to extend."""
     fl = _read_json(FL_STATE_PATH) or {}
     if _simulation_running(fl):
-        raise RuntimeError("A simulation is running; wait for it to finish before recording a new version.")
+        raise RuntimeError(f"A simulation is running; wait for it to finish before you {action}.")
     blocks = _read_json(CHAIN_PATH)
     if not isinstance(blocks, list) or not blocks:
         raise RuntimeError("No blockchain found. Run the simulation first.")
     if any(b.get("index", 0) > 0 and not (b.get("public_key_full") and b.get("signature_full")) for b in blocks):
         raise RuntimeError("Run the simulation again so the ledger can be reloaded and signed (old chain_state.json has truncated keys).")
+    try:
+        chain = InProcessChain.from_blocks(blocks, seed=SEED)
+        ok = chain.verify_chain()
+    except Exception:
+        ok = False
+    if not ok:
+        raise RuntimeError("The existing blockchain does not verify; refusing to extend it.")
+    return fl, blocks, chain
+
+
+def _save_ledger(chain: InProcessChain, fl: dict) -> None:
+    if not chain.verify_chain():
+        raise RuntimeError("Internal error: the new block did not verify; nothing was written.")
+    _write_json(CHAIN_PATH, chain.to_dict())
+    if fl:
+        fl["chain_length"], fl["chain_valid"] = len(chain), True
+        _write_json(FL_STATE_PATH, fl)
+
+
+def record_new_version(h: str) -> dict:
+    if h not in HOSPITALS:
+        raise RuntimeError(f"Unknown hospital {h!r}.")
+    fl, blocks, chain = _open_ledger("record a new version")
     rec = chain_record(h, blocks)
     if rec is None:
         raise RuntimeError(f"{h} was never registered on the blockchain. Run the simulation first.")
@@ -214,13 +237,6 @@ def record_new_version(h: str) -> dict:
         _read_text_frame(_path(h))
     except Exception as exc:
         raise RuntimeError(f"{h} data file is missing or not readable as CSV: {exc}")
-    try:
-        chain = InProcessChain.from_blocks(blocks, seed=SEED)
-        ok = chain.verify_chain()
-    except Exception:
-        ok = False
-    if not ok:
-        raise RuntimeError("The existing blockchain does not verify; refusing to extend it.")
     new_hash = hash_bytes(raw)
     if new_hash == rec["hash"]:
         raise RuntimeError(f"{h}'s data already matches the blockchain; nothing new to record.")
@@ -235,12 +251,7 @@ def record_new_version(h: str) -> dict:
         },
         signer=NodeKeyPair.generate(h, seed=SEED),
     )
-    if not chain.verify_chain():
-        raise RuntimeError("Internal error: the new block did not verify; nothing was written.")
-    _write_json(CHAIN_PATH, chain.to_dict())
-    if fl:
-        fl["chain_length"], fl["chain_valid"] = len(chain), True
-        _write_json(FL_STATE_PATH, fl)
+    _save_ledger(chain, fl)
     os.makedirs(os.path.dirname(_snap(h)), exist_ok=True)
     shutil.copyfile(_path(h), _snap(h))
     return block.to_dict()
@@ -252,3 +263,76 @@ def restore_original(h: str) -> str:
     shutil.copyfile(_snap(h), _path(h))
     with open(_path(h), "rb") as f:
         return hash_bytes(f.read())
+
+
+# -- Consent on the stored ledger (Consent tab) --------------------------------
+# Consent covers one registered version of a hospital's data (its current on-chain hash):
+# recording a new version needs a new grant.
+
+def _check_pair(owner: str, other: str) -> None:
+    for h in (owner, other):
+        if h not in HOSPITALS:
+            raise RuntimeError(f"Unknown hospital {h!r}.")
+    if owner == other:
+        raise RuntimeError(f"{owner} always has access to its own data.")
+
+
+def _current_hash(owner: str, blocks: list) -> str:
+    rec = chain_record(owner, blocks)
+    if rec is None:
+        raise RuntimeError(f"{owner} has no registered data on the blockchain. Run the simulation first.")
+    return rec["hash"]
+
+
+def consent_matrix() -> dict:
+    """{"chain_valid": bool, "access": {requester: {owner: bool}}} for each owner's current version."""
+    blocks, ok = _load_chain()
+    access = {r: {o: r == o for o in HOSPITALS} for r in HOSPITALS}
+    if ok:
+        chain = InProcessChain.from_blocks(blocks, seed=SEED)
+        for o in HOSPITALS:
+            rec = chain_record(o, blocks)
+            for r in HOSPITALS:
+                if r != o:
+                    access[r][o] = bool(rec) and chain.has_access(r, rec["hash"])
+    return {"chain_valid": ok, "access": access}
+
+
+def _consent_change(owner: str, to: str, revoke: bool) -> dict:
+    _check_pair(owner, to)
+    fl, blocks, chain = _open_ledger("change consent")
+    rec_hash = _current_hash(owner, blocks)
+    fn = chain.revoke_access if revoke else chain.grant_access
+    try:
+        block = fn(owner, to, rec_hash, signer=NodeKeyPair.generate(owner, seed=SEED))
+    except PermissionError as exc:
+        raise RuntimeError(str(exc))
+    _save_ledger(chain, fl)
+    return block.to_dict()
+
+
+def grant_consent(owner: str, to: str) -> dict:
+    """`owner` lets `to` use its current data version: a grant_access block signed by the owner."""
+    return _consent_change(owner, to, revoke=False)
+
+
+def revoke_consent(owner: str, to: str) -> dict:
+    """Withdraw an active grant: a revoke_access block signed by the owner."""
+    return _consent_change(owner, to, revoke=True)
+
+
+def request_access(requester: str, owner: str) -> dict:
+    """Ask the ledger whether `requester` may use `owner`'s data, and log the attempt either way."""
+    _check_pair(owner, requester)
+    fl, blocks, chain = _open_ledger("request access")
+    rec_hash = _current_hash(owner, blocks)
+    allowed = chain.has_access(requester, rec_hash)
+    reason = (f"{owner} granted {requester} access to this version" if allowed
+              else f"no consent from {owner} for this version of its data")
+    block = chain.log_event(
+        "access_request", requester,
+        details={"owner": owner, "record_hash": rec_hash, "allowed": allowed, "reason": reason},
+        signer=NodeKeyPair.generate(requester, seed=SEED),
+    )
+    _save_ledger(chain, fl)
+    return {"allowed": allowed, "reason": reason, "block_index": block.index}
