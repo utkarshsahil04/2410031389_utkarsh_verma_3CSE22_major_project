@@ -63,3 +63,19 @@ class NodeKeyPair:
             return True
         except (InvalidSignature, ValueError):
             return False
+
+
+# Permissioned membership: fixed, configured up front (never learned from blocks).
+# ponytail: demo keys derive from a public seed, so anyone with this source can sign as a
+#           member. Ceiling: a real deployment loads member public keys from a config/CA.
+DEMO_SEED = "demo-seed"
+MEMBER_IDS = ("coordinator", "Hospital_A", "Hospital_B", "Hospital_C")
+
+
+def member_keys(seed: str = DEMO_SEED) -> dict[str, NodeKeyPair]:
+    return {m: NodeKeyPair.generate(m, seed=seed) for m in MEMBER_IDS}
+
+
+def member_public_keys() -> dict[str, str]:
+    """Allowlist: node_id -> public key hex."""
+    return {m: k.public_bytes_hex() for m, k in member_keys().items()}
