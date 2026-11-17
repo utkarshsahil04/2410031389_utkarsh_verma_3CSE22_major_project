@@ -104,18 +104,68 @@
         "hospital_2": 2.3132,
         "hospital_3": 2.6019
       }
+    },
+    {
+      "round": 6,
+      "accuracy": 0.75,
+      "avg_loss": 2.2827,
+      "client_losses": {
+        "hospital_1": 2.5706,
+        "hospital_2": 2.1924,
+        "hospital_3": 2.0851
+      }
+    },
+    {
+      "round": 7,
+      "accuracy": 0.6579,
+      "avg_loss": 2.1655,
+      "client_losses": {
+        "hospital_1": 2.1527,
+        "hospital_2": 2.2776,
+        "hospital_3": 2.0661
+      }
+    },
+    {
+      "round": 8,
+      "accuracy": 0.7632,
+      "avg_loss": 2.5639,
+      "client_losses": {
+        "hospital_1": 2.6653,
+        "hospital_2": 2.3678,
+        "hospital_3": 2.6586
+      }
+    },
+    {
+      "round": 9,
+      "accuracy": 0.7237,
+      "avg_loss": 2.1465,
+      "client_losses": {
+        "hospital_1": 2.6547,
+        "hospital_2": 1.8108,
+        "hospital_3": 1.9741
+      }
+    },
+    {
+      "round": 10,
+      "accuracy": 0.6974,
+      "avg_loss": 2.601,
+      "client_losses": {
+        "hospital_1": 2.8632,
+        "hospital_2": 2.5962,
+        "hospital_3": 2.3436
+      }
     }
   ],
-  "total_rounds": 5,
-  "current_round": 5,
-  "final_accuracy": 0.7368,
+  "total_rounds": 10,
+  "current_round": 10,
+  "final_accuracy": 0.6974,
   "chain_valid": true,
-  "chain_length": 41,
+  "chain_length": 76,
   "replica_sync": {
     "Hospital_A": {
       "hospital_id": "Hospital_A",
-      "synced_height": 41,
-      "local_length": 41,
+      "synced_height": 76,
+      "local_length": 76,
       "last_sync_ok": true,
       "rejected_blocks": 0,
       "chain_valid": true,
@@ -123,8 +173,8 @@
     },
     "Hospital_B": {
       "hospital_id": "Hospital_B",
-      "synced_height": 41,
-      "local_length": 41,
+      "synced_height": 76,
+      "local_length": 76,
       "last_sync_ok": true,
       "rejected_blocks": 0,
       "chain_valid": true,
@@ -132,8 +182,8 @@
     },
     "Hospital_C": {
       "hospital_id": "Hospital_C",
-      "synced_height": 41,
-      "local_length": 41,
+      "synced_height": 76,
+      "local_length": 76,
       "last_sync_ok": true,
       "rejected_blocks": 0,
       "chain_valid": true,
@@ -215,6 +265,81 @@
       "hospital": "Hospital_C",
       "round": 5,
       "update_hash": "99d05fe5ed8669dd..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 6,
+      "update_hash": "389a38ba6a692e9f..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 6,
+      "update_hash": "c33a3700264e26bb..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 6,
+      "update_hash": "e894015e7fa2e19f..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 7,
+      "update_hash": "78d689978abe6647..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 7,
+      "update_hash": "240f4c660e2b0225..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 7,
+      "update_hash": "a0519c1520582c45..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 8,
+      "update_hash": "f19bf56790da288c..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 8,
+      "update_hash": "1b38cbf629d7e1f9..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 8,
+      "update_hash": "e00a91d983196bbc..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 9,
+      "update_hash": "e79a06850eb3980f..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 9,
+      "update_hash": "abd1883d7e3ad0ac..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 9,
+      "update_hash": "3f08db6db7d6d783..."
+    },
+    {
+      "hospital": "Hospital_A",
+      "round": 10,
+      "update_hash": "5230fc86769e694a..."
+    },
+    {
+      "hospital": "Hospital_B",
+      "round": 10,
+      "update_hash": "af28570318ccfbb5..."
+    },
+    {
+      "hospital": "Hospital_C",
+      "round": 10,
+      "update_hash": "98a00134a1b3f36f..."
     }
   ],
   "consent_checks": [
@@ -231,8 +356,8 @@
   ],
   "chain_sync": {
     "backend": "InProcessChain",
-    "length": 41,
-    "signed_blocks": 40,
+    "length": 76,
+    "signed_blocks": 75,
     "signer": "coordinator",
     "known_nodes": [
       "coordinator",
