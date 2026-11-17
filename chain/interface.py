@@ -9,19 +9,31 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
+from chain.crypto import NodeKeyPair
+
 
 class ChainBackend(ABC):
     """Permissioned audit-ledger interface for medical-record + FL events."""
 
     @abstractmethod
     def add_record(
-        self, hospital_id: str, record_hash: str, metadata: dict | None = None
+        self,
+        hospital_id: str,
+        record_hash: str,
+        metadata: dict | None = None,
+        *,
+        signer: NodeKeyPair | None = None,
     ) -> Any:
         """Anchor a dataset/record hash. Raw rows stay off-chain."""
 
     @abstractmethod
     def grant_access(
-        self, granting_hospital: str, requesting_hospital: str, record_hash: str
+        self,
+        granting_hospital: str,
+        requesting_hospital: str,
+        record_hash: str,
+        *,
+        signer: NodeKeyPair | None = None,
     ) -> Any:
         """Log a consented cross-hospital access grant."""
 
@@ -31,7 +43,12 @@ class ChainBackend(ABC):
 
     @abstractmethod
     def log_event(
-        self, event_type: str, actor: str, details: dict | None = None
+        self,
+        event_type: str,
+        actor: str,
+        details: dict | None = None,
+        *,
+        signer: NodeKeyPair | None = None,
     ) -> Any:
         """General audit entry (FL rounds, session start, update hashes, …)."""
 
