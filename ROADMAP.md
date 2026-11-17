@@ -72,7 +72,7 @@ python run_simulation.py
 | Dataset | Status | Notes |
 |---|---|---|
 | PIMA | **Done** | Default smoke test (`--dataset pima`) |
-| Fed-Heart-Disease style | **Done** | UCI multi-center heart tables (`--dataset heart`) |
+| Fed-Heart-Disease style | **Done** | UCI heart tables, 920 rows from 4 centres (`--dataset heart`) |
 | MIMIC | **Stub** | No PhysioNet download; synthetic sample + access README |
 
 ```powershell
