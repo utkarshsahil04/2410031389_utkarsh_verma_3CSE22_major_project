@@ -1,6 +1,8 @@
 """Load and normalize fl_state.json / chain_state.json for the Streamlit UI."""
 from __future__ import annotations
 
+import html
+
 import json
 import os
 from datetime import datetime, timezone
@@ -62,6 +64,8 @@ def format_timestamp(ts: float | int | str | None) -> str:
         return "—"
     try:
         value = float(ts)
+        if value == 0:
+            return "— (fixed genesis)"
         # Heuristic: simulation sometimes writes synthetic epoch values.
         if value > 1e12:
             value /= 1000.0
@@ -160,3 +164,20 @@ def chain_table_rows(chain: list) -> list[dict]:
             }
         )
     return rows
+
+
+def events_of(chain: list | None, event: str) -> list[dict]:
+    """All blocks whose data.event equals `event`."""
+    return [b for b in (chain or []) if (b.get("data") or {}).get("event") == event]
+
+
+def highlight_diff(a: str | None, b: str | None) -> str:
+    """HTML for `a` where characters differing from `b` (same position) are red."""
+    a, b = a or "", b or ""
+    out = []
+    for i, ch in enumerate(a):
+        if i < len(b) and b[i] == ch:
+            out.append(html.escape(ch))
+        else:
+            out.append(f'<span class="diff">{html.escape(ch)}</span>')
+    return "".join(out)
