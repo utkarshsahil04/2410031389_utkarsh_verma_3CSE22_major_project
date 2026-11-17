@@ -57,9 +57,11 @@ cd "d:\COllege\3rd Year\major project\code"
 python -m streamlit run streamlit_app.py
 ```
 
-Tabs: How it works · Run the demo · Live Data Check · Hospitals · Training results · Blockchain audit · Experiments
+Tabs: How it works · Run the demo · Live Data Check · Consent · Hospitals · Training results · Blockchain audit · Experiments
 
 **Live Data Check:** each hospital's data lives in `hospital_data/<Hospital>.csv`. The tab re-hashes the files every 2 s and compares them with the hash on the (re-verified) blockchain. Edit a file (in the tab, Excel or VS Code) and its card turns red; *Record new version* appends a `data_update` block signed by that hospital; *Train on the current (edited) hospital data* (`--keep-data`) retrains on the edited files.
+
+**Consent:** a live who-can-use-whose-data grid read from the verified chain. The data owner can grant or revoke access (signed `grant_access` / `revoke_access` blocks), and *Ask for the data* logs every request as a signed `access_request` block, allowed or refused.
 
 ### Option B — HTML dashboard + CLI
 
