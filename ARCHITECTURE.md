@@ -55,7 +55,7 @@ Two parallel concerns share one simulation loop:
 | FL client | `code/fl_client.py` | Local `SGDClassifier` on hospital shard |
 | FL server | `code/fl_server.py` | FedAvg aggregation, evaluation, global model hash |
 | Data loaders | `code/datasets/` | PIMA, UCI Heart, MIMIC stub |
-| Splits | `code/data_split.py` | IID equal shards or non-IID label/feature skew |
+| Splits | `code/data_split.py` | IID equal shards or non-IID age-band feature skew (positive rates differ as a side effect) |
 | Chain ABC | `code/chain/interface.py` | `ChainBackend` contract |
 | Crypto | `code/chain/crypto.py` | Ed25519 keypairs / signatures |
 | In-process ledger | `code/chain/inprocess.py` | Signed append-only chain (default) |
@@ -84,7 +84,7 @@ sequenceDiagram
 
     Sim->>HA: HospitalNode(shard_A)
     HA->>HA: SHA-256(local CSV)
-    HA->>BC: add_record (Ed25519-signed)
+    HA->>BC: add_record (signed with Hospital_A's Ed25519 key)
     HA->>HA: ChainReplica.sync_from(authority)
 
     Sim->>HB: register_data()
@@ -173,13 +173,15 @@ Stable API (`ChainBackend`) so FL code never imports a concrete ledger:
 |---|---|
 | `add_record(hospital, hash, metadata)` | Register dataset fingerprint |
 | `grant_access(from, to, record_ref)` | Consent / access grant |
-| `has_access(requester, record_ref)` | Enforce consent before use |
+| `has_access(requester, record_ref)` | True only if the verified chain holds a grant signed by the record's owner (gates `use_record_ref`; local training uses only the hospital's own data) |
 | `log_event(type, actor, details)` | FL / session / update-hash audit |
-| `verify_chain()` | Hash links + Ed25519 signature checks |
+| `verify_chain()` | Fixed genesis, index = position, hash links, recomputed hashes, Ed25519 signature, signer key must match the member allowlist |
 | `to_dict()` | Serialize for `chain_state.json` |
 | `sync_status()` | Optional dashboard metadata |
 
-**Block fields:** `index`, `timestamp`, `data`, `previous_hash`, `hash`, `signer_id`, `public_key`, `signature`
+**Block fields:** `index`, `timestamp`, `data`, `previous_hash`, `hash`, `signer_id`, `public_key`, `signature`. The signature covers `{index, timestamp, data, previous_hash, signer_id, public_key}`.
+
+**Membership:** permissioned allowlist `coordinator, Hospital_A, Hospital_B, Hospital_C` (`chain/crypto.py`). Hospitals sign their own registrations, grants, participation and update hashes; the coordinator signs session and round summaries. Keys come from a public demo seed (a real deployment would issue them from a CA).
 
 **Backends**
 
@@ -189,7 +191,9 @@ Stable API (`ChainBackend`) so FL code never imports a concrete ledger:
 | `FabricGateway` mock | `CHAIN_BACKEND=fabric`, `FABRIC_MODE=mock` | Same interface; in-memory Fabric-like submit/evaluate |
 | `FabricGateway` SDK | `FABRIC_MODE=sdk` | Stub — real Hyperledger Gateway hooks TODO |
 
-**Replicas:** each `HospitalNode` keeps a `ChainReplica`. Sync copies from the authority chain; unsigned or hash-broken peers are rejected.
+**Replicas:** each `HospitalNode` keeps a `ChainReplica`. Sync re-validates every block against the allowlist; blocks from unknown signers, bad signatures or broken links are rejected.
+
+**Live data integrity (`integrity.py`):** shard files in `hospital_data/` are re-hashed and compared with the latest registration signed by that hospital on the re-verified chain; edits can be anchored as signed `data_update` blocks.
 
 ---
 
@@ -275,10 +279,12 @@ major project/
 
 | Threat | Prototype handling | Future upgrade |
 |---|---|---|
-| Tampered audit trail | Hash links + Ed25519; replicas reject bad peers | Fabric peers + endorsement policy |
+| Tampered audit trail | Hash links + Ed25519 + member allowlist; replicas reject unknown signers. Not detected: deleting the newest blocks (needs an external anchor) | Fabric peers + endorsement policy |
+| Edited hospital data | Live re-hash vs on-chain hash; signed `data_update` versions | Same, plus per-row Merkle proofs |
+| Update altered after commit | Server recomputes each update hash vs the committed one and rejects mismatches | Secure channels |
 | Raw data leakage | Only hashes / weights leave the node | Secure aggregation (Bonawitz 2017) |
-| Unlogged access | `has_access` / `use_record_ref` consent gate | Patient consent chaincode |
-| Model poisoning | Measured in `run_experiments.py` | Robust / trimmed aggregation |
+| Forged consent | Grants must be signed by the record's owner; derived from the verified chain | Patient consent chaincode |
+| Model poisoning | Measured in `run_experiments.py`; the poisoned update's hash is on-chain, so it is traceable to the sender (not prevented) | Robust / trimmed aggregation |
 
 **Hard constraint:** no live hospital PHI — public PIMA / UCI Heart or synthetic MIMIC-shaped data only.
 
@@ -286,13 +292,16 @@ major project/
 
 ## 9. Experiments Layer
 
-`run_experiments.py` produces comparable metrics (accuracy / AUC where applicable):
+`run_experiments.py` produces like-for-like metrics (same global scaler, same number of epochs = `--rounds`, accuracy and AUC):
 
-1. Centralized SGD (pooled upper bound)
+1. Centralized SGD (pooled data reference)
 2. Local-only (average of isolated hospital models)
 3. FedAvg (current path)
-4. Label-flip and weight-poison attacks (accuracy drop)
-5. Chain tamper — asserts `verify_chain()` fails
+4. Label-flip and weight-poison attacks (accuracy drop; poisoned update hash is committed, so it is attributable)
+5. Transit tamper — update altered after its hash was committed; the server detects and rejects it
+6. Chain tamper — asserts `verify_chain()` fails
+
+PIMA, IID, 3 rounds (accuracy / AUC): centralized 0.724 / 0.791 · local-only 0.693 / 0.729 · FedAvg 0.711 / 0.763 · label-flip 0.605 / 0.649 · weight-poison 0.263 / 0.330 · transit tamper 0.697 / 0.778 (detected and rejected) · chain tamper detected.
 
 Results: console table + `experiment_results.json` (also shown in Streamlit Experiments tab).
 
