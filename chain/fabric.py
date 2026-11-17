@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from chain.crypto import NodeKeyPair
 from chain.interface import ChainBackend
 from chain.inprocess import InProcessChain
 
@@ -61,7 +62,7 @@ class FabricGateway(ChainBackend):
         # Mock ledger mirrors Fabric "world state + audit blocks"
         self._mock: InProcessChain | None = None
         if self.mode in ("mock", "sim", "simulation", "local"):
-            self._mock = InProcessChain(seed="fabric-mock")
+            self._mock = InProcessChain()
         elif self.mode not in ("sdk", "real", "live"):
             raise ValueError(
                 f"Unknown FABRIC_MODE '{self.mode}'. Use 'mock' or 'sdk'."
@@ -93,18 +94,18 @@ class FabricGateway(ChainBackend):
             raise NotImplementedError(_SDK_MSG)
         return self._mock
 
-    def _submit(self, fn_name: str, *args: Any) -> Any:
+    def _submit(self, fn_name: str, *args: Any, signer: NodeKeyPair | None = None) -> Any:
         """Simulate Fabric contract.SubmitTransaction(fn_name, ...)."""
         ledger = self._require_mock()
         if fn_name == "RegisterRecord":
             hospital_id, record_hash, metadata = args
-            return ledger.add_record(hospital_id, record_hash, metadata)
+            return ledger.add_record(hospital_id, record_hash, metadata, signer=signer)
         if fn_name == "GrantAccess":
             granting, requesting, record_hash = args
-            return ledger.grant_access(granting, requesting, record_hash)
+            return ledger.grant_access(granting, requesting, record_hash, signer=signer)
         if fn_name == "LogEvent":
             event_type, actor, details = args
-            return ledger.log_event(event_type, actor, details)
+            return ledger.log_event(event_type, actor, details, signer=signer)
         raise ValueError(f"Unknown Fabric submit fn: {fn_name}")
 
     def _evaluate(self, fn_name: str, *args: Any) -> Any:
@@ -123,24 +124,41 @@ class FabricGateway(ChainBackend):
     # ── ChainBackend API ─────────────────────────────────────────────────────
 
     def add_record(
-        self, hospital_id: str, record_hash: str, metadata: dict | None = None
-    ) -> Any:
-        return self._submit("RegisterRecord", hospital_id, record_hash, metadata or {})
-
-    def grant_access(
-        self, granting_hospital: str, requesting_hospital: str, record_hash: str
+        self,
+        hospital_id: str,
+        record_hash: str,
+        metadata: dict | None = None,
+        *,
+        signer: NodeKeyPair | None = None,
     ) -> Any:
         return self._submit(
-            "GrantAccess", granting_hospital, requesting_hospital, record_hash
+            "RegisterRecord", hospital_id, record_hash, metadata or {}, signer=signer
+        )
+
+    def grant_access(
+        self,
+        granting_hospital: str,
+        requesting_hospital: str,
+        record_hash: str,
+        *,
+        signer: NodeKeyPair | None = None,
+    ) -> Any:
+        return self._submit(
+            "GrantAccess", granting_hospital, requesting_hospital, record_hash, signer=signer
         )
 
     def has_access(self, requesting_hospital: str, record_hash: str) -> bool:
         return bool(self._evaluate("HasAccess", requesting_hospital, record_hash))
 
     def log_event(
-        self, event_type: str, actor: str, details: dict | None = None
+        self,
+        event_type: str,
+        actor: str,
+        details: dict | None = None,
+        *,
+        signer: NodeKeyPair | None = None,
     ) -> Any:
-        return self._submit("LogEvent", event_type, actor, details or {})
+        return self._submit("LogEvent", event_type, actor, details or {}, signer=signer)
 
     def verify_chain(self) -> bool:
         return bool(self._evaluate("VerifyChain"))

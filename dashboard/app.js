@@ -78,6 +78,7 @@ function drawLineChart(canvas, datasets, opts = {}) {
 // ── Blockchain audit log ──────────────────────────────────────────────────
 
 let renderedBlocks = 0;
+let renderedLastHash = null;
 
 function eventClass(evt) {
   if (evt.includes('genesis'))            return 'ev-genesis';
@@ -90,19 +91,36 @@ function eventClass(evt) {
   return '';
 }
 
-function humanLabel(block) {
-  const evt = block.data?.event ?? 'unknown';
-  const actor = block.data?.actor || block.data?.hospital || '';
-  const details = block.data?.details || {};
+// Chain fields are untrusted: build DOM nodes with textContent, never innerHTML.
+function node(tag, text, cls) {
+  const n = document.createElement(tag);
+  n.textContent = text;
+  if (cls) n.className = cls;
+  return n;
+}
 
-  if (evt === 'genesis')              return '<strong>Chain initialized</strong> — genesis block';
-  if (evt === 'register_record')      return `<strong>${block.data.hospital}</strong> registered dataset — <span class="hash">${block.data.record_hash?.slice(0, 16)}…</span>`;
-  if (evt === 'grant_access')         return `<strong>${block.data.from}</strong> granted access to <strong>${block.data.to}</strong>`;
-  if (evt === 'fl_session_start')     return `<strong>FL session started</strong> — ${details.rounds} rounds, ${(details.hospitals || []).length} hospitals`;
-  if (evt === 'fl_update_hash')       return `<strong>${actor}</strong> committed update hash — <span class="hash">${(details.update_hash || '').slice(0, 16)}…</span> (r${details.round})`;
-  if (evt === 'fl_round_participation') return `<strong>${actor}</strong> submitted local update — round ${details.round}, ${details.n_samples} samples`;
-  if (evt === 'fl_round_complete')    return `<strong>Round ${details.round} complete</strong> — accuracy <span style="color:var(--cyan)">${fmt(details.accuracy, 4)}</span> — <span class="hash">model: ${details.model_hash}</span>`;
-  return `<strong>${evt}</strong> by ${actor}`;
+function humanLabel(block, into) {
+  const d = block.data || {};
+  const evt = String(d.event ?? 'unknown');
+  const actor = d.actor || d.hospital || '';
+  const details = d.details || {};
+  const add = (...parts) => parts.forEach(p => into.append(typeof p === 'string' ? document.createTextNode(p) : p));
+  const b = t => node('strong', String(t));
+  const hash = t => node('span', String(t), 'hash');
+
+  if (evt === 'genesis')              return add(b('Chain initialized'), ' — genesis block');
+  if (evt === 'register_record')      return add(b(d.hospital), ' registered dataset — ', hash(String(d.record_hash ?? '').slice(0, 16) + '…'));
+  if (evt === 'data_update')          return add(b(d.hospital), ' recorded new dataset version — ', hash(String(d.record_hash ?? '').slice(0, 16) + '…'));
+  if (evt === 'grant_access')         return add(b(d.from), ' granted access to ', b(d.to));
+  if (evt === 'fl_session_start')     return add(b('FL session started'), ` — ${details.rounds} rounds, ${(details.hospitals || []).length} hospitals`);
+  if (evt === 'fl_update_hash')       return add(b(actor), ' committed update hash — ', hash(String(details.update_hash || '').slice(0, 16) + '…'), ` (r${details.round})`);
+  if (evt === 'fl_round_participation') return add(b(actor), ` submitted local update — round ${details.round}, ${details.n_samples} samples`);
+  if (evt === 'fl_round_complete') {
+    const acc = node('span', fmt(details.accuracy, 4));
+    acc.style.color = 'var(--cyan)';
+    return add(b(`Round ${details.round} complete`), ' — accuracy ', acc, ' — ', hash(`model: ${details.model_hash}`));
+  }
+  return add(b(evt), ` by ${actor}`);
 }
 
 function normalizeChain(chain) {
@@ -116,22 +134,29 @@ function updateAuditLog(chainRaw) {
   const chain = normalizeChain(chainRaw);
   if (!chain || !chain.length) return;
   const log = $('audit-log');
+  // A new simulation replaces the chain (genesis is identical every run, so compare the
+  // last block we rendered): restart rendering if it shrank or that block changed.
+  if (renderedBlocks > 0 &&
+      (chain.length < renderedBlocks || chain[renderedBlocks - 1].hash !== renderedLastHash)) {
+    renderedBlocks = 0;
+    log.textContent = '';
+  }
   const newBlocks = chain.slice(renderedBlocks);
   if (!newBlocks.length) return;
 
-  if (renderedBlocks === 0) log.innerHTML = '';
+  if (renderedBlocks === 0) log.textContent = '';
 
   newBlocks.forEach(block => {
     const entry = document.createElement('div');
-    entry.className = `audit-entry ${eventClass(block.data?.event ?? '')}`;
-    entry.innerHTML = `
-      <span class="audit-block-num">#${block.index}</span>
-      <span class="audit-event">${humanLabel(block)}</span>
-    `;
+    entry.className = `audit-entry ${eventClass(String(block.data?.event ?? ''))}`;
+    const label = node('span', '', 'audit-event');
+    humanLabel(block, label);
+    entry.append(node('span', `#${block.index}`, 'audit-block-num'), label);
     log.appendChild(entry);
   });
 
   renderedBlocks = chain.length;
+  renderedLastHash = chain[chain.length - 1].hash;
   $('audit-count').textContent = `${chain.length} blocks`;
   log.scrollTop = log.scrollHeight;
 }
@@ -164,16 +189,28 @@ function updateHospitalCards(state) {
   });
 }
 
+let lastLossRound = null;
+
 function updateHospitalLosses(rounds) {
-  if (!rounds || !rounds.length) return;
+  if (!rounds || !rounds.length) {
+    lastLossRound = null;
+    MINI_KEYS.forEach(k => { miniSeries[k].length = 0; });
+    return;
+  }
   const last = rounds[rounds.length - 1];
+  // Only add a point when a new round appears (poll runs every 2 s); reset on a new run.
+  const isNew = last.round !== lastLossRound;
+  if (isNew && (lastLossRound === null || last.round < lastLossRound)) {
+    MINI_KEYS.forEach(k => { miniSeries[k].length = 0; });
+  }
+  lastLossRound = last.round;
 
   HOSPITAL_IDS.forEach((id, i) => {
     const key = `hospital_${i + 1}`;
     const loss = last.client_losses?.[key];
     if (loss !== undefined) {
       $(CARD_PREFIXES[i] + '-loss').textContent = fmt(loss, 4);
-      miniSeries[key].push(loss);
+      if (isNew) miniSeries[key].push(loss);
     }
   });
 

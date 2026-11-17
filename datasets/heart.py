@@ -44,6 +44,8 @@ COLUMNS = [
     "Num",
 ]
 
+MAX_MISSING = 0.40  # drop a feature column if more than 40% of its values are missing
+
 # Fallback single-file mirror if UCI is unreachable
 _FALLBACK_URL = (
     "https://raw.githubusercontent.com/selva86/datasets/master/Heart.csv"
@@ -132,10 +134,16 @@ def ensure_heart() -> str:
     out = df[feature_cols + ["Outcome", "center"]].copy()
     for c in feature_cols:
         out[c] = pd.to_numeric(out[c], errors="coerce")
-    out = out.dropna(subset=feature_cols).reset_index(drop=True)
-    # Median-impute any remaining NaNs in features
+    # Keep every centre: drop columns that are mostly missing (decided from the data),
+    # then median-impute the remaining gaps. (dropna on rows left only Cleveland.)
+    missing = out[feature_cols].isna().mean()
+    dropped = missing[missing > MAX_MISSING].index.tolist()
+    feature_cols = [c for c in feature_cols if c not in dropped]
+    out = out[feature_cols + ["Outcome", "center"]]
     for c in feature_cols:
         out[c] = out[c].fillna(out[c].median())
+    print(f"    Dropped mostly-missing columns (> {MAX_MISSING:.0%}): {dropped}")
+    print(f"    Rows per centre: {out['center'].value_counts().to_dict()}")
 
     out.to_csv(COMBINED_PATH, index=False)
     print(f"    Saved to {COMBINED_PATH}  ({len(out)} rows)\n")

@@ -5,7 +5,8 @@ Compares:
   - Centralized SGD (pooled upper bound)
   - Local-only (no FL — average of per-hospital models)
   - FedAvg (current simulator path)
-  - Label-flip / weight-poison attack (accuracy drop)
+  - Label-flip / weight-poison attack (accuracy drop; poisoned update is hashed and attributed on-chain)
+  - Transit tamper (update altered after its hash was committed -> server rejects it)
   - Chain tamper attempt (verify_chain must fail)
 
 Usage:
@@ -26,14 +27,13 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.preprocessing import StandardScaler
 
 from chain import InProcessChain, get_chain
 from data_split import split_for_hospitals
 from datasets import load_dataset
 from fl_client import HospitalClient
-from fl_server import FedAvgServer
-from hospital_node import HospitalNode
+from fl_server import FedAvgServer, combine_stats
+from hospital_node import HospitalNode, hash_weights
 
 BASE = os.path.dirname(__file__)
 DEFAULT_OUT = os.path.join(BASE, "experiment_results.json")
@@ -68,13 +68,20 @@ def eval_sgd(coef, intercept, X, y) -> dict:
     }
 
 
-def run_centralized(train_df: pd.DataFrame, test_df: pd.DataFrame, epochs: int = 5) -> dict:
-    scaler = StandardScaler()
-    Xtr = scaler.fit_transform(train_df.iloc[:, :-1].values)
-    ytr = train_df.iloc[:, -1].values.astype(int)
-    Xte = scaler.transform(test_df.iloc[:, :-1].values)
-    yte = test_df.iloc[:, -1].values.astype(int)
+def global_scaler(shards: list[pd.DataFrame]):
+    """Pooled mean/std from per-shard sufficient statistics (identical to the std of all train rows)."""
+    stats = []
+    for sh in shards:
+        X, _ = _xy(sh)
+        stats.append((len(X), X.mean(axis=0), X.var(axis=0)))
+    return combine_stats(stats)
 
+
+def run_centralized(train_df: pd.DataFrame, test_df: pd.DataFrame, mean, std, epochs: int) -> dict:
+    """Pooled upper bound: same global scaler, same SGD hyper-parameters / epoch count as FL."""
+    Xtr, ytr = _xy(train_df)
+    Xte, yte = _xy(test_df)
+    Xtr, Xte = (Xtr - mean) / std, (Xte - mean) / std
     model = SGDClassifier(
         loss="log_loss", alpha=0.001, max_iter=epochs, tol=None, random_state=42
     )
@@ -90,15 +97,17 @@ def run_centralized(train_df: pd.DataFrame, test_df: pd.DataFrame, epochs: int =
     }
 
 
-def run_local_only(shards: list[pd.DataFrame], test_df: pd.DataFrame) -> dict:
-    """Train one model per hospital; report mean accuracy on shared test set."""
+def run_local_only(shards: list[pd.DataFrame], test_df: pd.DataFrame, mean, std, epochs: int) -> dict:
+    """One model per hospital (same scaler, same epochs); mean metrics on the shared test set."""
     accs, aucs = [], []
     Xte_raw, yte = _xy(test_df)
+    Xte = (Xte_raw - mean) / std
     for shard in shards:
         client = HospitalClient("local", shard)
-        weights, _, _ = client.train(None)
-        # Evaluate with hospital's own scaler on raw test — approximate local quality
-        Xte = client.scaler.transform(Xte_raw)
+        client.set_scaler(mean, std)
+        weights = None
+        for _ in range(epochs):
+            weights, _, _ = client.train(weights)
         m = eval_sgd(weights["coef"], weights["intercept"], Xte, yte)
         accs.append(m["accuracy"])
         if m["auc"] is not None:
@@ -111,18 +120,39 @@ def run_local_only(shards: list[pd.DataFrame], test_df: pd.DataFrame) -> dict:
     }
 
 
+def _poisoned(w: dict) -> dict:
+    # Large antagonistic scaling so FedAvg accuracy visibly drops
+    return {"coef": -w["coef"] * 25.0, "intercept": -w["intercept"] * 25.0}
+
+
+def _poison_client(client) -> None:
+    """Make the client itself produce poisoned updates (so they are hashed + committed as such)."""
+    honest_train = client.train
+
+    def train(global_weights):
+        w, n, loss = honest_train(global_weights)
+        return _poisoned(w), n, loss
+
+    client.train = train
+
+
 def run_fedavg(
     shards: list[pd.DataFrame],
     test_df: pd.DataFrame,
     rounds: int,
     *,
     poison: str | None = None,
+    audit: dict | None = None,
 ) -> dict:
     """
     poison:
       None — clean FedAvg
       label_flip — Hospital_C flips all local labels
-      weight_poison — Hospital_C scales coef by large factor after train
+      weight_poison — Hospital_C poisons its update BEFORE it is hashed/committed,
+                      so the chain truthfully attributes the poisoned update to Hospital_C
+      transit_tamper — Hospital_C's honest update is altered AFTER its hash is committed;
+                       the server recomputes the hash and rejects the mismatching update
+    audit: optional dict filled with the chain and the hashes of the updates actually aggregated.
     """
     chain = InProcessChain(seed="exp")
     nodes = []
@@ -132,37 +162,52 @@ def run_fedavg(
             data.iloc[:, -1] = 1 - data.iloc[:, -1].astype(int)
         nodes.append(HospitalNode(name, data, chain))
         nodes[-1].register_data()
+        if poison == "weight_poison" and name == "Hospital_C":
+            _poison_client(nodes[-1].client)
 
-    server = FedAvgServer(test_df)
+    mean, std = combine_stats([n.client.local_feature_stats() for n in nodes])
+    for n in nodes:
+        n.client.set_scaler(mean, std)
+
+    server = FedAvgServer(test_df, mean, std)
     global_weights = None
     history = []
+    aggregated, rejected = [], []
 
     for rnd in range(1, rounds + 1):
         updates = []
         for node in nodes:
-            w, n, loss, _ = node.participate_in_round(rnd, global_weights)
-            if poison == "weight_poison" and node.hospital_id == "Hospital_C":
-                # Large antagonistic scaling so FedAvg accuracy visibly drops
-                w = {
-                    "coef": -w["coef"] * 25.0,
-                    "intercept": -w["intercept"] * 25.0,
-                }
+            w, n, loss, committed = node.participate_in_round(rnd, global_weights)
+            if poison == "transit_tamper" and node.hospital_id == "Hospital_C":
+                w = _poisoned(w)  # altered on the wire, after the honest hash was committed
+            # Server re-hashes what it received and compares with the committed hash.
+            # ponytail: committed hash taken from the node's return value (same value it logged on-chain).
+            received = hash_weights(w)
+            if received != committed:
+                rejected.append({"hospital": node.hospital_id, "round": rnd})
+                continue
+            aggregated.append({"hospital": node.hospital_id, "round": rnd, "hash": received})
             updates.append((w, n, loss))
         global_weights = server.aggregate(updates)
         acc, avg_loss = server.evaluate(rnd, updates)
         history.append({"round": rnd, "accuracy": round(acc, 4), "avg_loss": round(avg_loss, 4)})
 
-    Xte_raw, yte = _xy(test_df)
-    # Server eval already uses its own scaler fit on test — use last accuracy
+    _, yte = _xy(test_df)
     name = "fedavg" if poison is None else f"fedavg_{poison}"
-    return {
+    if audit is not None:
+        audit.update(chain=chain, aggregated=aggregated)
+    out = {
         "name": name,
         "accuracy": history[-1]["accuracy"] if history else None,
-        "auc": None,  # server path reports accuracy; AUC optional
+        "auc": _auc(yte, server.predict_proba()),
         "history": history,
         "final_model_hash": server.model_hash()[:16] + "...",
         "poison": poison,
     }
+    if poison == "transit_tamper":
+        out["tamper_detected"] = len(rejected) > 0
+        out["updates_rejected"] = rejected
+    return out
 
 
 def run_chain_tamper() -> dict:
@@ -190,11 +235,14 @@ def print_table(results: list[dict]):
             status = "FAIL(ok)" if r.get("assert_fails") else "UNEXPECTED"
             print(f"  {'chain_tamper':<28}  {status:>10}  {'—':>10}")
             continue
+        extra = ""
+        if r["name"] == "fedavg_transit_tamper":
+            extra = "  [detected+rejected]" if r.get("tamper_detected") else "  [NOT DETECTED]"
         acc = r.get("accuracy")
         auc = r.get("auc")
         acc_s = f"{acc:.4f}" if acc is not None else "—"
         auc_s = f"{auc:.4f}" if auc is not None else "—"
-        print(f"  {r['name']:<28}  {acc_s:>10}  {auc_s:>10}")
+        print(f"  {r['name']:<28}  {acc_s:>10}  {auc_s:>10}{extra}")
     print("=" * 64 + "\n")
 
 
@@ -208,6 +256,7 @@ def main():
 
     t0 = time.time()
     df, meta = load_dataset(args.dataset)
+    df.attrs.clear()  # heart loader attaches a per-row centre array that breaks pd.concat
     if "center" in df.columns:
         df = df.drop(columns=["center"])
 
@@ -219,11 +268,14 @@ def main():
     results = []
     print(f"[exp] dataset={meta['name']} split={split_info['mode']} rounds={args.rounds}")
 
+    # Same global scaler + same epoch count (= rounds) + same SGD hyper-parameters everywhere
+    mean, std = global_scaler(shards)
+
     print("[exp] centralized SGD...")
-    results.append(run_centralized(train_df, test_df, epochs=max(args.rounds, 5)))
+    results.append(run_centralized(train_df, test_df, mean, std, args.rounds))
 
     print("[exp] local-only...")
-    results.append(run_local_only(shards, test_df))
+    results.append(run_local_only(shards, test_df, mean, std, args.rounds))
 
     print("[exp] FedAvg (clean)...")
     fed = run_fedavg(shards, test_df, args.rounds, poison=None)
@@ -242,6 +294,12 @@ def main():
         (fed["accuracy"] or 0) - (atk_w["accuracy"] or 0), 4
     )
     results.append(atk_w)
+
+    print("[exp] FedAvg + transit-tamper (Hospital_C update altered after commit)...")
+    atk_t = run_fedavg(shards, test_df, args.rounds, poison="transit_tamper")
+    atk_t["accuracy_drop_vs_fedavg"] = round((fed["accuracy"] or 0) - (atk_t["accuracy"] or 0), 4)
+    assert atk_t["tamper_detected"], "server must detect the altered update"
+    results.append(atk_t)
 
     print("[exp] chain tamper...")
     tamper = run_chain_tamper()

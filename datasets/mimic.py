@@ -57,7 +57,7 @@ def ensure_mimic_stub() -> str:
         return SYNTH_PATH
 
     rng = np.random.default_rng(42)
-    n = 180
+    n = 600  # large enough that the 10% test split has positive cases
     age = rng.integers(18, 90, size=n)
     gender = rng.integers(0, 2, size=n)
     hr = rng.normal(85, 15, size=n).clip(40, 180)
@@ -69,15 +69,17 @@ def ensure_mimic_stub() -> str:
     glucose = rng.normal(140, 50, size=n).clip(50, 400)
     wbc = rng.normal(9, 4, size=n).clip(1, 30)
 
-    # Synthetic risk score → binary label (not clinical truth)
-    logit = (
-        -4.0
-        + 0.03 * (age - 50)
-        + 0.02 * (hr - 80)
-        + 0.015 * (sys_bp - 120)
-        - 0.08 * (spo2 - 96)
-        + 0.005 * (glucose - 120)
-        + 0.05 * (wbc - 8)
+    # Synthetic risk score → binary label (not clinical truth). Tuned for ~19% positives
+    # (ICU-like); the old -4.0 intercept gave ~2%, so tests often had no positive patient
+    # and "predict nobody dies" scored a meaningless 100%.
+    logit = -3.8 + 2.0 * (
+        0.04 * (age - 50)
+        + 0.03 * (hr - 80)
+        - 0.02 * (sys_bp - 120)
+        - 0.15 * (spo2 - 96)
+        + 0.08 * (resp - 18)
+        + 0.004 * (glucose - 120)
+        + 0.06 * (wbc - 8)
     )
     prob = 1 / (1 + np.exp(-logit))
     outcome = (rng.random(n) < prob).astype(int)

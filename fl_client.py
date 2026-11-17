@@ -9,7 +9,6 @@ import hashlib
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import SGDClassifier
-from sklearn.preprocessing import StandardScaler
 
 
 class HospitalClient:
@@ -17,12 +16,20 @@ class HospitalClient:
         self.hospital_id = hospital_id
         self.data = data
 
-        # Fit scaler on local shard only -- mimics real FL (no shared normalisation)
-        self.scaler = StandardScaler()
-        X_raw = data.iloc[:, :-1].values
-        self.X = self.scaler.fit_transform(X_raw)
+        # Raw features stay local. Scaling uses GLOBAL statistics pooled by the server
+        # (local_feature_stats -> server combine_stats -> set_scaler); no local-only scaler.
+        self.X_raw = data.iloc[:, :-1].values.astype(float)
+        self.X = None
         self.y = data.iloc[:, -1].values.astype(int)
-        self.n_features = self.X.shape[1]
+        self.n_features = self.X_raw.shape[1]
+
+    def local_feature_stats(self) -> tuple[int, np.ndarray, np.ndarray]:
+        """Sufficient statistics only (n, mean, variance) -- no rows leave the hospital."""
+        return len(self.X_raw), self.X_raw.mean(axis=0), self.X_raw.var(axis=0)
+
+    def set_scaler(self, mean: np.ndarray, std: np.ndarray) -> None:
+        """Standardise local features with the shared global mean/std."""
+        self.X = (self.X_raw - mean) / std
 
     def get_data_hash(self) -> str:
         """SHA-256 of the local dataset -- anchored on-chain as proof of registration."""
@@ -38,6 +45,7 @@ class HospitalClient:
         ponytail: SGD one epoch per round instead of full convergence.
                   Upgrade path: swap for PyTorch model; same interface.
         """
+        assert self.X is not None, "call set_scaler() with the global scaler before train()"
         model = SGDClassifier(
             loss="log_loss", alpha=0.001, max_iter=1, tol=None, random_state=42
         )
