@@ -87,6 +87,7 @@ function eventClass(evt) {
   if (evt.includes('fl_round_partic'))    return 'ev-fl';
   if (evt.includes('fl_update_hash'))     return 'ev-fl';
   if (evt.includes('grant_access'))       return 'ev-grant';
+  if (evt.includes('revoke_access') || evt.includes('access_request')) return 'ev-grant';
   if (evt.includes('session_start'))      return 'ev-session';
   return '';
 }
@@ -112,6 +113,8 @@ function humanLabel(block, into) {
   if (evt === 'register_record')      return add(b(d.hospital), ' registered dataset — ', hash(String(d.record_hash ?? '').slice(0, 16) + '…'));
   if (evt === 'data_update')          return add(b(d.hospital), ' recorded new dataset version — ', hash(String(d.record_hash ?? '').slice(0, 16) + '…'));
   if (evt === 'grant_access')         return add(b(d.from), ' granted access to ', b(d.to));
+  if (evt === 'revoke_access')        return add(b(d.from), ' revoked access for ', b(d.to));
+  if (evt === 'access_request')       return add(b(actor), ` asked for ${details.owner}'s data — `, b(details.allowed ? 'ALLOWED' : 'REFUSED'));
   if (evt === 'fl_session_start')     return add(b('FL session started'), ` — ${details.rounds} rounds, ${(details.hospitals || []).length} hospitals`);
   if (evt === 'fl_update_hash')       return add(b(actor), ' committed update hash — ', hash(String(details.update_hash || '').slice(0, 16) + '…'), ` (r${details.round})`);
   if (evt === 'fl_round_participation') return add(b(actor), ` submitted local update — round ${details.round}, ${details.n_samples} samples`);

@@ -245,7 +245,7 @@ def tab_how_it_works(fl_state: dict | None, chain: list | None) -> None:
          "A 'hash' is a short code computed from the whole file. Change even one number and the code changes completely. "
          "Each hospital writes its fingerprint (not the data) into a shared log. Later you can check the data still matches.", ev2)
     step(3, "Consent: who may use whose data",
-         "Hospital A has agreed that Hospital B may use its data, but not Hospital C. The log is checked before access is given.", ev3)
+         "Hospital A has agreed that Hospital B may use its data, but not Hospital C. The log is checked before access is given. Try it yourself in the Consent tab.", ev3)
     step(4, "Each hospital trains the model locally",
          "Every hospital teaches its own copy of the model using only its own patients. Only the learned numbers "
          "(model weights) leave the building, never the records.", ev4)
@@ -459,6 +459,94 @@ def tab_live_check() -> None:
                "That is how a tiny edit to a hospital file is caught.")
 
 
+# ── tab 4: Consent ────────────────────────────────────────────────────────────
+_CONSENT_EVENTS = ("grant_access", "revoke_access", "access_request")
+
+
+def _cell_style(v: str) -> str:
+    if v == "Allowed":
+        return "background-color: #D1FAE5; color: #065F46; font-weight: 600"
+    if v == "Refused":
+        return "background-color: #FEE2E2; color: #991B1B; font-weight: 600"
+    return "color: #6B857F"
+
+
+@st.fragment(run_every=2)
+def _consent_live() -> None:
+    m = integrity.consent_matrix()
+    if not m["chain_valid"]:
+        st.error("The blockchain failed verification, so no consent can be trusted: everyone is refused.")
+    hs = integrity.HOSPITALS
+    grid = pd.DataFrame(
+        [{"Who asks": r, **{f"{o}'s data": ("Own data" if r == o else ("Allowed" if m["access"][r][o] else "Refused"))
+                            for o in hs}} for r in hs]
+    )
+    st.markdown("**Who can use whose data right now** (read live from the verified blockchain)")
+    st.dataframe(grid.style.map(_cell_style, subset=[f"{o}'s data" for o in hs]), width="stretch", hide_index=True)
+
+    chain = load_chain_state() or []
+    recent = [b for b in chain if (b.get("data") or {}).get("event") in _CONSENT_EVENTS][-8:]
+    if recent:
+        rows = []
+        for b in reversed(recent):
+            d = b["data"]
+            if d["event"] == "access_request":
+                det = d.get("details") or {}
+                what = f"{d.get('actor')} asked for {det.get('owner')}'s data"
+                result = "ALLOWED" if det.get("allowed") else "REFUSED"
+            else:
+                what = f"{d.get('from')} → {d.get('to')}"
+                result = "granted" if d["event"] == "grant_access" else "revoked"
+            rows.append({"Block": b.get("index"), "Event": d["event"], "What": what, "Result": result,
+                         "Signed by": b.get("signer_id")})
+        st.markdown("**Recent consent activity on the blockchain**")
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+
+
+def tab_consent() -> None:
+    st.subheader("Consent")
+    st.caption("What am I looking at? Who may use whose data. Only the owner of a dataset can give or withdraw "
+               "consent, every decision is a block signed by that owner, and every request is logged, allowed or not.")
+    if integrity.read_meta() is None:
+        st.info("No hospital data yet. Run the demo first (Run the demo tab).")
+        return
+    _consent_live()
+    runner = _get_runner()
+    busy = runner.is_running()
+    hs = integrity.HOSPITALS
+
+    st.markdown("---")
+    st.markdown("#### Give or withdraw consent")
+    c1, c2 = st.columns(2)
+    owner = c1.selectbox("Data owner (signs the decision)", hs, key="c_owner")
+    to = c2.selectbox("Hospital that may use it", [h for h in hs if h != owner], key=f"c_to_{owner}")
+    b1, b2, _ = st.columns([1, 1, 2])
+    for btn, fn, verb in ((b1.button("Grant access", type="primary", disabled=busy), integrity.grant_consent, "gave {to} access"),
+                          (b2.button("Revoke access", disabled=busy), integrity.revoke_consent, "withdrew {to}'s access")):
+        if btn:
+            try:
+                blk = fn(owner, to)
+                st.success(f"Block #{blk['index']}: {owner} {verb.format(to=to)}, signed by {owner}.")
+            except Exception as exc:  # RuntimeError carries a readable message
+                st.error(str(exc))
+
+    st.markdown("#### Try a request")
+    r1, r2 = st.columns(2)
+    req = r1.selectbox("Who asks", hs, index=2, key="r_req")
+    own = r2.selectbox("For whose data", [h for h in hs if h != req], key=f"r_own_{req}")
+    if st.button("Ask for the data", disabled=busy):
+        try:
+            res = integrity.request_access(req, own)
+            msg = f"{res['reason']}. Logged as block #{res['block_index']}, signed by {req}."
+            (st.success if res["allowed"] else st.error)(("ALLOWED: " if res["allowed"] else "REFUSED: ") + msg)
+        except Exception as exc:
+            st.error(str(exc))
+    if busy:
+        st.caption("Consent changes are disabled while the demo is running.")
+    st.caption("Consent covers the version of the data that is registered now. If the owner records a new "
+               "version (Live Data Check), it needs a new grant.")
+
+
 def tab_hospitals(fl_state: dict | None) -> None:
     st.subheader("Hospitals")
     st.caption("What am I looking at? One row per hospital: how many records it holds, its registered fingerprint, and its latest training error.")
@@ -545,7 +633,7 @@ def tab_training(fl_state: dict | None) -> None:
 
 def tab_blockchain(chain: list | None, fl_state: dict | None) -> None:
     st.subheader("Blockchain audit")
-    st.caption("What am I looking at? The tamper-evident log. Each row is a block. Green rows (data_update) mean a hospital re-registered edited data.")
+    st.caption("What am I looking at? The tamper-evident log. Each row is a block. Green rows: a new data version or a consent grant. Red rows: a revoked grant or a refused request.")
     if chain is None:
         st.info("No chain_state.json yet. Run the simulation to write the audit trail.")
         return
@@ -560,10 +648,14 @@ def tab_blockchain(chain: list | None, fl_state: dict | None) -> None:
 
     rows = chain_table_rows(chain)
     df = pd.DataFrame(rows)
-    styled = df.style.apply(
-        lambda r: ["background-color: #D1FAE5; color: #065F46"] * len(r) if r["Event"] == "data_update" else [""] * len(r),
-        axis=1,
-    )
+    def _row(r):
+        bad = r["Event"] == "revoke_access" or (r["Event"] == "access_request" and r["Actor"].endswith("REFUSED"))
+        if bad:
+            return ["background-color: #FEE2E2; color: #991B1B"] * len(r)
+        if r["Event"] in ("data_update", "grant_access"):
+            return ["background-color: #D1FAE5; color: #065F46"] * len(r)
+        return [""] * len(r)
+    styled = df.style.apply(_row, axis=1)
     st.dataframe(styled, width="stretch", hide_index=True, height=420)
 
     with st.expander("Raw block JSON (last 3)"):
@@ -672,7 +764,7 @@ def main() -> None:
     render_sidebar(fl_state)
 
     tabs = st.tabs(
-        ["How it works", "Run the demo", "Live Data Check", "Hospitals",
+        ["How it works", "Run the demo", "Live Data Check", "Consent", "Hospitals",
          "Training results", "Blockchain audit", "Experiments"]
     )
     with tabs[0]:
@@ -682,12 +774,14 @@ def main() -> None:
     with tabs[2]:
         tab_live_check()
     with tabs[3]:
-        tab_hospitals(fl_state)
+        tab_consent()
     with tabs[4]:
-        tab_training(fl_state)
+        tab_hospitals(fl_state)
     with tabs[5]:
-        tab_blockchain(chain, fl_state)
+        tab_training(fl_state)
     with tabs[6]:
+        tab_blockchain(chain, fl_state)
+    with tabs[7]:
         tab_experiments(flags)
 
 
