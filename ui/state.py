@@ -149,8 +149,11 @@ def chain_table_rows(chain: list) -> list[dict]:
             or data.get("to")
             or "—"
         )
-        if data.get("from") and data.get("to") and event == "grant_access":
+        if data.get("from") and data.get("to") and event in ("grant_access", "revoke_access"):
             actor = f"{data.get('from')} → {data.get('to')}"
+        if event == "access_request":
+            det = data.get("details") or {}
+            actor = f"{data.get('actor')} asks {det.get('owner')}: {'ALLOWED' if det.get('allowed') else 'REFUSED'}"
         details = {k: v for k, v in data.items() if k not in ("event",)}
         rows.append(
             {
