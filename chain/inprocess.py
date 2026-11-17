@@ -237,21 +237,51 @@ class InProcessChain(ChainBackend):
             keys,
         )
 
+    def revoke_access(
+        self,
+        granting_hospital: str,
+        requesting_hospital: str,
+        record_hash: str,
+        *,
+        signer: NodeKeyPair | None = None,
+    ) -> Block:
+        keys = signer or self._default_signer(granting_hospital)
+        if keys.node_id != granting_hospital:
+            raise PermissionError(
+                f"revoke_access must be signed by the owner {granting_hospital}, not {keys.node_id}"
+            )
+        if not self._owns(granting_hospital, record_hash):
+            raise PermissionError(
+                f"{granting_hospital} has not registered record {record_hash[:16]}... and cannot revoke it"
+            )
+        if not self.has_access(requesting_hospital, record_hash):
+            raise PermissionError(f"{requesting_hospital} has no active grant to revoke")
+        return self._add(
+            {
+                "event": "revoke_access",
+                "from": granting_hospital,
+                "to": requesting_hospital,
+                "record_hash": record_hash,
+            },
+            keys,
+        )
+
     def has_access(self, requesting_hospital: str, record_hash: str) -> bool:
-        """Derived from the verified chain: a grant signed by the record's owner."""
+        """Derived from the verified chain: the owner's latest signed grant or revoke wins."""
         if not self.verify_chain():
             return False
+        allowed = False
         for i, blk in enumerate(self.chain):
             d = blk.data
             if (
-                d.get("event") == "grant_access"
+                d.get("event") in ("grant_access", "revoke_access")
                 and d.get("to") == requesting_hospital
                 and d.get("record_hash") == record_hash
                 and d.get("from") == blk.signer_id
                 and self._owns(blk.signer_id, record_hash, upto=i)
             ):
-                return True
-        return False
+                allowed = d["event"] == "grant_access"
+        return allowed
 
     def log_event(
         self,
@@ -290,7 +320,7 @@ class InProcessChain(ChainBackend):
             if not self._block_ok(block, len(self.chain), self._last()):
                 return False
             d = block.data
-            if d.get("event") == "grant_access" and not all(
+            if d.get("event") in ("grant_access", "revoke_access") and not all(
                 k in d for k in ("from", "to", "record_hash")
             ):
                 return False
